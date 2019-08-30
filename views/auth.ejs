@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('./shared/header.ejs') %>
+  <link rel="stylesheet" type="text/css" href="css/auth.css">
+</head>
+<body onload="onLoad()">
+  <div id="auth-box">
+  <%- include('./shared/brand.ejs') %>
+    <div class="divider">
+      <button id="select-login-form" onclick="changeForm('login')" class="selected">Login</button>
+      <button id="select-signup-form" onclick="changeForm('signup')">Sign Up</button>
+    </div>
+    <form id="login-form" class="selected">
+      <input type="text" name="username" placeholder="Username" />
+      <input type="password" name="password" placeholder="Password" />
+      <input type="submit" id="submit-login-form" value="Continue" />
+      <p class="validation-error"></p>
+    </form>
+    <form id="signup-form">
+      <input type="text" name="username" placeholder="Username" />
+      <input type="password" name="password" placeholder="Password" />
+      <input type="password" name="c-password" placeholder="Confirm Password" />
+      <input type="submit" id="submit-signup-form" value="Continue" />
+      <p class="validation-error"></p>
+    </form>
+  </div>
+  <%- include('./shared/footer.ejs') %>
+  <script type="text/javascript" src="js/auth.js"></script>
+</body>
+</html>
