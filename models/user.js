@@ -6,19 +6,19 @@ const mongo = require('../helpers/mongo');
 const ObjectId = require('mongodb').ObjectId;
 const bcrypt = require('bcryptjs');
 
-exports.getById = async function(id)
+async function getById(id)
 {
   let db = await mongo();
   return await db.collection(COLLECTION_NAME).findOne({ _id: new ObjectId(id) });
 }
 
-exports.getByName = async function(username)
+async function getByName(username)
 {
   let db = await mongo();
   return await db.collection(COLLECTION_NAME).findOne({ username: username });
 }
 
-exports.create = async function(username, password)
+async function create(username, password)
 {
   let db = await mongo();
 
@@ -30,6 +30,7 @@ exports.create = async function(username, password)
     let user = {
       username: username,
       hash: hash,
+      tag: await generateTag(hash),
       created_at: new Date()
     };
 
@@ -37,13 +38,19 @@ exports.create = async function(username, password)
   }
   else
   {
-    throw 'Username already in use';
+    throw 'auth.signup_username_in_use_feedback';
   }
 }
 
-exports.authenticate = async function(username, password)
+async function update(document)
 {
-  let document = await this.getByName(username);
+  let db = await mongo();
+  await db.collection(COLLECTION_NAME).updateOne({ username: document.username }, { $set: document });
+}
+
+async function authenticate(username, password)
+{
+  let document = await getByName(username);
 
   if(document)
   {
@@ -51,35 +58,55 @@ exports.authenticate = async function(username, password)
     
     if(sameHash)
     {
+      await loginUser(document);
       return document;
     }
     else
     {
-      throw 'The password is wrong';
+      throw 'auth.login_password_wrong_feedback';
     }
   }
   else
   {
-    throw 'User not found';
+    throw 'auth.login_user_not_found_feedback';
   }
 }
 
-exports.validate = async function(id, hash)
+async function validate(id, hash)
 {
-  let document = await this.getById(id);
+  let document = await getById(id);
 
   if(document)
   {
+    await loginUser(document);
     return document.hash === hash;
   }
 
   return false;
 }
 
+async function linkToSocket(id, socketId)
+{
+  let db = await mongo();
+  await db.collection(COLLECTION_NAME).updateOne({ _id: new ObjectId(id) }, { $set: { socketId: socketId } });
+}
+
+async function unlinkFromSocket(id)
+{
+  let db = await mongo();
+  await db.collection(COLLECTION_NAME).updateOne({ _id: new ObjectId(id) }, { $set: { socketId: undefined } });
+}
+
 async function existUser(username)
 {
   let db = await mongo();
   return await db.collection(COLLECTION_NAME).countDocuments({ username: username });
+}
+
+async function loginUser(user)
+{
+  user.last_time_seen = new Date();
+  await update(user);
 }
 
 async function cryptPassword(password)
@@ -102,3 +129,67 @@ async function comparePassword(password, hash)
 {
   return await bcrypt.compare(password, hash);
 }
+
+async function generateTag(hash)
+{
+  let tag;
+  let alreadyUsed = false;
+
+  do
+  {
+    tag = '#';
+    let bits = '';
+
+    for(let i = 0; i < hash.length; i++)
+    {
+      bits += hash[i].charCodeAt(0).toString(2);
+    }
+
+    let partCount = Math.floor(bits.length / 6);
+
+    for(let i = 0; i < 6; i++)
+    {
+      let offset = i * partCount;
+      let end = offset + partCount;
+
+      let section = 0;
+      for(let j = offset; j < end; j++)
+      {
+        section += parseInt(bits[j]);
+      }
+      
+      let charCode;
+      if(section % 2 === 0)
+      {
+        charCode = Math.floor(Math.random() * 26) + 65;
+      }
+      else
+      {
+        charCode = Math.floor(Math.random() * 10) + 48;
+      }
+      
+      tag += String.fromCharCode(charCode);
+    }
+
+    alreadyUsed = await isTagAlreadyUsed(tag);
+  }
+  while(alreadyUsed === true);
+
+  return tag;
+}
+
+async function isTagAlreadyUsed(tag)
+{
+  let db = await mongo();
+  let size = await db.collection(COLLECTION_NAME).countDocuments({ tag: tag });
+  return size === 1;
+}
+
+exports.getById = getById;
+exports.getByName = getByName;
+exports.create = create;
+exports.update = update;
+exports.authenticate = authenticate;
+exports.validate = validate;
+exports.linkToSocket = linkToSocket;
+exports.unlinkFromSocket = unlinkFromSocket;

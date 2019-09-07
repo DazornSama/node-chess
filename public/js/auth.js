@@ -1,6 +1,13 @@
 async function onLoad() {
-  document.getElementById('submit-login-form').addEventListener('click', onLogin);
-  document.getElementById('submit-signup-form').addEventListener('click', onSignup);
+  document.querySelector('input[name="username"]').addEventListener('keyup', inputValidation);
+  document.querySelector('input[name="username"]').addEventListener('blur', inputValidation);
+
+  document.querySelector('input[name="password"]').addEventListener('keypress', fastLogin);
+  document.querySelector('input[name="password"]').addEventListener('keyup', inputValidation);
+  document.querySelector('input[name="password"]').addEventListener('blur', inputValidation);
+
+  document.getElementById('submit-signup').addEventListener('click', onSignup);
+  document.getElementById('submit-login').addEventListener('click', onLogin);
 
   let session = sessionStorage.getItem('user_session');
   if(session)
@@ -12,92 +19,85 @@ async function onLoad() {
       window.location.reload();
     }
   }
+
+  pageLoaded();
+}
+
+async function inputValidation(event) {
+  let value = event.target.value;
+  let validation = true;
+
+  event.target.parentNode.classList.remove('error');
+
+  if(!value) {
+    event.target.parentNode.classList.add('error');
+    validation = false;
+  }
+
+  document.getElementById('submit-signup').disabled = !validation;
+  document.getElementById('submit-login').disabled = !validation;
+}
+
+function fastLogin(event) {
+  if(event.charCode === 13 || event.keyCode === 13) {
+    let delegate = {
+      target: document.getElementById('submit-login')
+    };
+
+    onLogin(delegate);
+  }
 }
 
 async function onLogin(event) {
-  event.preventDefault();
+  let username = document.querySelector('input[name="username"]').value;
+  let password = document.querySelector('input[name="password"]').value;
+
+  document.getElementById('submit-signup').disabled = true;
+  event.target.classList.add('loading');
+
+  let res = await ajaxRequest('/auth/login', [], { username: username, password: password });
   
-  let form = document.getElementById('login-form');
-  let username = form.querySelector('input[name="username"]').value;
-  let password = form.querySelector('input[name="password"]').value;
+  event.target.classList.remove('loading');
+  document.getElementById('submit-signup').disabled = false;
 
-  if(!username || !password) {
-    form.querySelector('.validation-error').innerText = 'Please, fill out all the fields';
+  if(!res.isOk) {
+    feedbackUser('error', i18n(res.content));
   }
-  else {
-    form.querySelector('.validation-error').innerText = '';
+  else
+  {
+    let user = {
+      id: res.content._id,
+      hash: res.content.hash
+    };
 
-    let res = await ajaxRequest('/auth/login', [], { username: username, password: password });
-    
-    if(!res.isOk) {
-      form.querySelector('.validation-error').innerText = res.content;
-    }
-    else
-    {
-      let user = {
-        id: res.content._id,
-        hash: res.content.hash
-      };
-
-      sessionStorage.setItem('user_session', JSON.stringify(user));
-      window.location.reload();
-    }
+    sessionStorage.setItem('user_session', JSON.stringify(user));
+    window.location.reload();
   }
 }
 
 async function onSignup(event) {
-  event.preventDefault();
+  let username = document.querySelector('input[name="username"]').value;
+  let password = document.querySelector('input[name="password"]').value;
 
-  let form = document.getElementById('signup-form');
-  let username = form.querySelector('input[name="username"]').value;
-  let password = form.querySelector('input[name="password"]').value;
-  let confirmPassword = form.querySelector('input[name="c-password"]').value;
-
-  if(!username || !password || !confirmPassword) {
-    form.querySelector('.validation-error').innerText = 'Please, fill out all the fields';
+  if(!password) {
+    document.querySelector('input[name="password"]').parentNode.classList.add('error');
+    feedbackUser('alert', i18n('auth.signup_password_not_empty_feedback'));
+    return;
   }
-  else if(password !== confirmPassword) {
-    form.querySelector('.validation-error').innerText = 'The passwords does not match!';
-  }
-  else {
-    form.querySelector('.validation-error').innerText = '';
 
-    let res = await ajaxRequest('/auth/signup', [], { username: username, password: password });
-    
-    if(!res.isOk) {
-      form.querySelector('.validation-error').innerText = res.content;
-    }
-    else
-    {
-      alert('User created!\nNow you can login');
-    }
-  }
-}
+  document.getElementById('submit-login').disabled = true;
+  event.target.classList.add('loading');
 
-function changeForm(form) {
-  let loginButton = document.getElementById('select-login-form');
-  let signupButton = document.getElementById('select-signup-form');
-  let loginForm = document.getElementById('login-form');
-  let signupForm = document.getElementById('signup-form');
+  let res = await ajaxRequest('/auth/signup', [], { username: username, password: password });
 
-  if(form === 'login') {
-    deselectElements([ signupButton, signupForm ]);
-    selectElements([ loginButton, loginForm ]);
-  }
-  else {
-    deselectElements([ loginButton, loginForm ]);
-    selectElements([ signupButton, signupForm ]);
-  }
-}
+  event.target.classList.remove('loading');
+  document.getElementById('submit-login').disabled = false;
 
-function selectElements(elements) {
-  for(let i = 0; i < elements.length; i++) {
-    elements[i].classList.add('selected');
+  if(!res.isOk) {
+    feedbackUser('error', i18n(res.content));
   }
-}
-
-function deselectElements(elements) {
-  for(let i = 0; i < elements.length; i++) {
-    elements[i].classList.remove('selected');
+  else
+  {
+    feedbackUser('success', i18n('auth.signup_success_feedback'));
   }
 }

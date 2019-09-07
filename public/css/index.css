@@ -1,0 +1,401 @@
+.container {
+  flex-direction: row;
+  margin: 0 auto;
+  width: calc(60% + 40px);
+}
+
+.container .box {
+  margin: 0 20px;
+}
+
+.container .box .box-body {
+  height: 428px;
+}
+
+#menu {
+  width: 90px;
+}
+
+#menu .box-head {
+  justify-content: center;
+}
+
+#menu .box-body ul {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#menu .box-body ul li {
+  margin-top: 20px;
+  padding-bottom: 20px;
+}
+
+#menu .box-body ul li .button.selected {
+  color: #ffc107;
+}
+
+#menu .box-body ul li:first-child {
+  margin-top: 0;
+}
+
+#menu .box-body ul li:last-child {
+  padding-bottom: 0;
+}
+
+#menu .box-body ul li:not(:last-child) {
+  border-bottom: 1px solid #ebebeb;
+}
+
+#menu .box-body ul li a {
+  text-decoration: none;
+}
+
+#menu .box-body ul li i {
+  font-size: 28px;
+}
+
+.box.game {
+  display: none;
+  flex: 3;
+  background-color: #292929;
+  color: #ebebeb;
+  user-select: none;
+}
+
+.box.game.active {
+  display: block;
+}
+
+.box.game .box-head .box-actions .box-action {
+  background-color: #4d4d4d;
+  border-radius: 50%;
+  color: #ebebeb;
+  transition: .2s;
+  user-select: none;
+}
+
+.box.game .box-footer {
+  background-color: #3f3f3f;
+}
+
+.box.game .button {
+  color: #ebebeb;
+}
+
+.box.game .button:hover {
+  color: #afafaf;
+}
+
+.box.game .button:disabled {
+  color: #6a6a6a;
+}
+
+#chat {
+  flex: 1;
+}
+
+#show-chat {
+  display: none;
+}
+
+#hide-chat {
+  display: none;
+}
+
+#chat .box-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+#chat .messages {
+  display: none;
+  margin: 0 0 12px 0;
+  padding: 0;
+  height: calc(100% - 38px);
+  list-style: none;
+}
+
+#chat .messages.active {
+  display: block;
+}
+
+#chat .messages .clearfix::after {
+  visibility: hidden;
+	display: block;
+	font-size: 0;
+	content: " ";
+	clear: both;
+	height: 0;
+}
+
+#chat .messages li:not(:last-child) {
+  margin-bottom: 8px;
+}
+
+#chat .messages .message {
+  float: left;
+  padding: 8px 16px;
+  background-color: #b5aefc;
+  border-radius: 16px 16px 16px 0;
+}
+
+#chat .messages .message:hover {
+  cursor: copy;
+}
+
+#chat .messages .mine .message {
+  float: right;
+  background-color: #64bde7;
+  border-radius: 16px 16px 0 16px;
+}
+
+#chat .messages .game .message {
+  background-color: #ebebeb;
+}
+
+#chat .messages .message .message-user {
+  font-size: 12px;
+  color: white;
+}
+
+#chat .messages .message .message-content {
+  margin: 0;
+  color: white;
+  word-break: break-all;
+}
+
+#chat .messages .game .message .message-content, #chat .messages .game .message .message-user {
+  color: initial;
+}
+
+#chat .messages .game .message .button {
+  margin: 8px 0 0 0;
+  padding: 8px 0 0 0;
+  border-top: 1px solid rgba(0, 0, 0, .15);
+}
+
+#chat .messages .message-time {
+  display: block;
+  float: left;
+  clear: both;
+  font-size: 10px;
+  font-weight: bold;
+  color: #6a6a6a;
+}
+
+#chat .messages .mine .message-time {
+  float: right;
+}
+
+#chat .box-footer .button.new i {
+  animation: newMessage 2s infinite;
+}
+
+@keyframes newMessage {
+  0% {
+    transform: translateY(0px);
+  }
+  10% {
+    transform: translateY(-4px);
+  }
+  20% {
+    transform: translateY(0px);
+  }
+  30% {
+    transform: translateY(-2px);
+  }
+  40% {
+    transform: translateY(0px);
+  }
+}
+
+#matchmaking .box-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#matchmaking-animation {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#matchmaking-animation i {
+  color: #292929;
+  background-color: #afafaf;
+  font-size: 48px;
+  border-radius: 50%;
+}
+
+#matchmaking-animation.searching i {
+  color: #292929;
+  background-color: #ffc107;
+  animation: searchingGameScale 1.2s ease-out infinite, searchingGameWave 1.2s ease-out infinite;
+}
+
+@keyframes searchingGameScale {
+  0%{
+    transform: scale(1);
+    box-shadow: none;
+  }
+  50% {
+    transform: scale(1.5);
+  }
+}
+
+@keyframes searchingGameWave {
+  0% {
+    box-shadow: none;
+  }
+  25% {
+    box-shadow: 0 0 0 7px #292929, 0 0 0 8px rgba(255, 193, 7, 1);
+  }
+  50% {
+    box-shadow: 0 0 0 7px #292929, 0 0 0 8px rgba(255, 193, 7, 0);
+  }
+}
+
+@media screen and (max-width: 1800px) {
+  .container {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .container {
+    width: 100%;
+    align-items: flex-start;
+    animation: unshiftContainer .3s linear;
+  }
+  
+  .container.shifted {
+    animation: shiftContainer .3s linear;
+    margin-left: -20%;
+    width: calc(100% + 20%);
+  }
+
+  #menu, .box.game.active, #chat {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    height: calc(100% - 80px);
+  }
+
+  .box.game.active {
+    flex: 1;
+  }
+
+  #chat {
+    display: none;
+    flex: none;
+  }
+
+  #chat.visible {
+    display: block;
+    flex: 2;
+    animation: showChat .3s linear;
+  }
+
+  #chat.hiding {
+    animation: hideChat .3s linear;
+  }
+
+  #show-chat {
+    display: block;
+  }
+
+  #hide-chat {
+    display: inline-block;
+  }
+
+  #menu .box-body, .box.game .box-body {
+    flex: 1;
+    height: auto;
+  }
+
+  @keyframes showChat {
+    from {
+      margin-left: 40px;
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+      margin-left: 20px;
+    }
+  }
+
+  @keyframes hideChat {
+    from {
+      margin-left: 20px;
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      margin-left: 40px;
+    }
+  }
+
+  @keyframes shiftContainer {
+    from {
+      margin-left: 0;
+      width: 100%;
+    }
+    to {
+      margin-left: -20%;
+      width: calc(100% + 20%);
+    }
+  }
+
+  @keyframes unshiftContainer {
+    from {
+      margin-left: -20%;
+      width: calc(100% + 20%);
+    }
+    to {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+}
+
+@media screen and (max-width: 900px) and (max-height: 900px) {
+  #hide-chat, #show-chat {
+    display: none;
+  }
+
+  footer {
+    display: none;
+  }
+  
+  @media screen and (orientation:portrait) {
+    #chat {
+      display: block;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+    }
+    #menu, .box.game.active {
+      display: none;
+    }
+  }
+
+  @media screen and (orientation:landscape) {
+    #menu, .box.game.active {
+      margin: 0;
+      height: 100%;
+      border-radius: 0;
+    }
+
+    #chat {
+      display: none;
+    }
+  }
+}

@@ -1,8 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
-<%- include('./shared/header.ejs') %>
-<body>
-  INDEX
+<head>
+  <%- include('./shared/header.ejs') %>
+  <link rel="stylesheet" href="https://unpkg.com/simplebar@latest/dist/simplebar.css">
+  <link rel="stylesheet" type="text/css" href="css/index.css">
+</head>
+<body onload="onLoad()">
+  <div class="container">
+    <!-- Menu -->
+    <div class="box" id="menu">
+      <div class="box-head">
+        <img src="images/crown_logo.png" title="Online Chess">
+      </div>
+      <div class="box-body">
+        <ul>
+          <li>
+            <button class="button selected" data-target="profile" title="<%= trans.index.menu.profile_title %>">
+              <i class="material-icons">account_circle</i>
+            </button>
+          </li>
+
+          <li>
+            <button class="button" data-target="matchmaking" title="<%= trans.index.menu.play_title %>">
+              <i class="material-icons">play_circle_outline</i>
+            </button>
+          </li>
+          <li>
+            <button class="button" data-target="rankings" title="<%= trans.index.menu.rankings_title %>">
+              <i class="material-icons">emoji_events</i>
+            </button>
+          </li>
+          <li id="show-chat">
+            <button class="button" data-target="chat" title="<%= trans.index.menu.settings_title %>">
+              <i class="material-icons">chat</i>
+            </button>
+          </li>
+          <li>
+            <button class="button" data-target="settings" title="<%= trans.index.menu.settings_title %>">
+              <i class="material-icons">settings_input_component</i>
+            </button>
+          </li>
+          <li>
+            <a href="./logout" class="button" title="<%= trans.index.menu.logout_title %>">
+              <i class="material-icons">exit_to_app</i>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="box-footer">
+        <button class="button" title="<%= trans.index.menu.help_title %>">
+          <i class="material-icons">help_outline</i>
+        </button>
+      </div>
+    </div>
+    <!-- Profile -->
+    <div class="box game active" id="profile">
+      <div class="box-head">
+        <h2><%= trans.index.profile.head_title_text %></h2>
+        <ul class="box-actions"></ul>
+      </div>
+      <div class="box-body">
+      </div>
+      <div class="box-footer">
+      </div>
+    </div>
+    <!-- Matchmaking -->
+    <div class="box game" id="matchmaking">
+      <div class="box-head">
+        <h2><%= trans.index.matchmaking.head_title_text %></h2>
+        <ul class="box-actions"></ul>
+      </div>
+      <div class="box-body">
+        <div id="matchmaking-animation">
+          <i class="material-icons">track_changes</i>
+        </div>
+        <div class="input">
+          <span class="prefix">#</span>
+          <input type="text" placeholder="<%= trans.index.matchmaking.usertag_placeholder %>" />
+        </div>
+        
+      </div>
+      <div class="box-footer">
+        <button class="button" id="search-game"><%= trans.index.matchmaking.search_game_text %></button>
+        <div class="spacer"></div>
+        <button class="button" id="ask-for-game" disabled><%= trans.index.matchmaking.invite_user_to_game_text %></button>
+      </div>
+    </div>
+    <!-- Rankings -->
+    <div class="box game" id="rankings">
+      <div class="box-head">
+        <h2><%= trans.index.rankings.head_title_text %></h2>
+        <ul class="box-actions"></ul>
+      </div>
+      <div class="box-body">
+      </div>
+      <div class="box-footer">
+      </div>
+    </div>
+    <!-- Settings -->
+    <div class="box game" id="settings">
+      <div class="box-head">
+        <h2><%= trans.index.settings.head_title_text %></h2>
+        <ul class="box-actions"></ul>
+      </div>
+      <div class="box-body">
+        <div class="select">
+          <label for="user-language"><%= trans.index.settings.language_text %></label>
+          <select id="user-language">
+            <option value="en" <%= (lang === 'en' ? 'selected' : '') %>><%= trans.index.settings.language_english_text %></option>
+            <option value="it" <%= (lang === 'it' ? 'selected' : '') %>><%= trans.index.settings.language_italian_text %></option>
+          </select>
+        </div>
+      </div>
+      <div class="box-footer">
+      </div>
+    </div>
+    <!-- Chat -->
+    <div class="box" id="chat">
+      <div class="box-head">
+        <h2>Chat</h2>
+        <ul class="box-actions">
+          <li class="box-action" id="hide-chat">
+            <i class="material-icons">arrow_back</i>
+          </li>
+        </ul>
+      </div>
+      <div class="box-body">
+        <ul class="messages active" id="general-chat-messages" data-simplebar></ul>
+        <ul class="messages" id="ingame-chat-messages" data-simplebar></ul>
+        <div class="message-composer input">
+          <i class="material-icons">chat</i>
+          <input type="text" name="chat-message" placeholder="Say something..." data-meteor-emoji="true" disabled />
+        </div>
+      </div>
+      <div class="box-footer">
+        <button id="general-chat" class="button active" title="<%= trans.index.chat.general_title %>">
+          <i class="material-icons">people</i>
+        </button>
+        <div class="spacer"></div>
+        <button id="ingame-chat" class="button" title="<%= trans.index.chat.ingame_title %>" disabled>
+          <i class="material-icons">sports_esports</i>
+        </button>
+      </div>
+    </div>
+  </div>
   <%- include('./shared/footer.ejs') %>
+  <script src="https://unpkg.com/simplebar@4.2.1/dist/simplebar.min.js"></script>
+  <script src="js/meteor-emoji.min.js"></script>
+  <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="js/engine/matchmaking.js"></script>
+  <script type="text/javascript" src="js/engine/settings.js"></script>
+  <script type="text/javascript" src="js/index.js"></script>
 </body>
 </html>

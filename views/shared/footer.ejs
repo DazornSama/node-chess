@@ -1,2 +1,77 @@
-<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<footer>
+  <span class="users-online">
+    <span id="users-number"></span> <%= trans.footer.users_online_text %>
+  </span>
+  <b>&copy; Online Chess | 2019</b>
+</footer>
+<div id="page-feedback-messages"></div>
+<div id="page-infinite-loader">
+  <img src="images/page-infinite-loader.svg">
+</div>
+<div id="templates">
+  <div class="box feedback-success" id="template-feedback-success">
+    <div class="box-head">
+      <h2><%= trans.footer.feedback.success_text %></h2>
+      <ul class="box-actions">
+        <li class="box-action disabled">
+          <i class="material-icons">done</i>
+        </li>
+      </ul>
+    </div>
+    <div class="box-body"></div>
+  </div>
+  <div class="box feedback-error" id="template-feedback-error">
+    <div class="box-head">
+      <h2><%= trans.footer.feedback.error_text %></h2>
+      <ul class="box-actions">
+        <li class="box-action disabled">
+          <i class="material-icons">close</i>
+        </li>
+      </ul>
+    </div>
+    <div class="box-body"></div>
+  </div>
+  <div class="box feedback-alert" id="template-feedback-alert">
+    <div class="box-head">
+      <h2><%= trans.footer.feedback.alert_text %></h2>
+      <ul class="box-actions">
+        <li class="box-action disabled">
+          <i class="material-icons">priority_high</i>
+        </li>
+      </ul>
+    </div>
+    <div class="box-body"></div>
+  </div>
+  <div class="box feedback-info" id="template-feedback-info">
+    <div class="box-head">
+      <h2><%= trans.footer.feedback.info_text %></h2>
+      <ul class="box-actions">
+        <li class="box-action disabled">
+          <i class="material-icons">notifications</i>
+        </li>
+      </ul>
+    </div>
+    <div class="box-body"></div>
+  </div>
+  <li class="clearfix" id="template-other-message">
+    <div class="message">
+      <span class="message-user"></span>
+      <p class="message-content"></p>
+    </div>
+    <span class="message-time"></span>
+  </li>
+  <li class="clearfix mine" id="template-mine-message">
+    <div class="message">
+      <span class="message-user"><%= trans.footer.mine_message_user_text %></span>
+      <p class="message-content"></p>
+    </div>
+    <span class="message-time"></span>
+  </li>
+</div>
 <script type="text/javascript" src="js/default.js"></script>
+<script type="text/javascript">
+  const i18nData = JSON.parse('<%- JSON.stringify(trans) %>');
+<% if (user)  { %>
+  const userData = JSON.parse('<%- JSON.stringify(user) %>');
+<% } %>
+</script>

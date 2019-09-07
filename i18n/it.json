@@ -1,0 +1,60 @@
+{
+  "auth": {
+    "welcome_text": "Benvenuto",
+    "username_placeholder": "Nome utente",
+    "password_placeholder": "Password",
+    "login_text": "Accedi",
+    "signup_text": "Registrati",
+    "login_password_wrong_feedback": "La password è sbagliata",
+    "login_user_not_found_feedback": "L&apos;utente non esiste",
+    "signup_password_not_empty_feedback": "La password non deve essere vuota",
+    "signup_username_in_use_feedback": "L&apos;username è già stato utilizzato",
+    "signup_success_feedback": "Utente creato!<br>Ora puoi accedere"
+  },
+  "index": {
+    "menu": {
+      "profile_title": "Profilo",
+      "play_title": "Nuova partita",
+      "rankings_title": "Classifica",
+      "settings_title": "Impostazioni",
+      "logout_title": "Esci",
+      "help_title": "Aiuto"
+    },
+    "profile": {
+      "head_title_text": "Profilo"
+    },
+    "matchmaking": {
+      "head_title_text": "Nuova partita",
+      "usertag_placeholder": "Tag utente",
+      "search_game_text": "Cerca partita",
+      "abort_search_game_text": "Annulla",
+      "invite_user_to_game_text": "Chiedi amichevole"
+    },
+    "rankings": {
+      "head_title_text": "Classifica"
+    },
+    "settings": {
+      "head_title_text": "Impostazioni",
+      "language_text": "Linguaggio",
+      "language_english_text": "Inglese",
+      "language_italian_text": "Italiano"
+    },
+    "chat": {
+      "general_title": "Generale",
+      "ingame_title": "Partita",
+      "connected_text": "Connesso alla chat",
+      "disconnected_text": "Disconnesso dalla chat",
+      "tag_copied_to_clipboard_text": "Tag utente copiato sulla clipboard"
+    }
+  },
+  "footer": {
+    "users_online_text": "utenti online",
+    "feedback": {
+      "success_text": "Successo",
+      "error_text": "Errore",
+      "alert_text": "Attenzione",
+      "info_text": "Info"
+    },
+    "mine_message_user_text": "Tu"
+  }
+}

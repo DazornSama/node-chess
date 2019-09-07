@@ -9,6 +9,7 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+const i18n = require('i18n-express');
 const favicon = require('serve-favicon');
 
 let app = express();
@@ -16,7 +17,9 @@ let server = require('http').createServer(app);
 let io = require('socket.io')(server);
 
 app.use(bodyParser.json());
-app.use(session(
+app.set('view engine', 'ejs');
+
+let sessionMiddleware = session(
   {
     secret: SESSION_SECRET,
     saveUninitialized: true,
@@ -25,14 +28,25 @@ app.use(session(
       maxAge: COOKIE_MAXAGE
     }
   }
-));
-app.set('view engine', 'ejs');
+);
+app.use(sessionMiddleware);
 
-app.use(favicon(__dirname + '/public/images/favicon.ico'));
-app.use(express.static(path.join(__dirname + '/public')));
+app.use(i18n(
+  {
+    translationsPath: path.join(__dirname, 'i18n'),
+    siteLangs: [
+      'en',
+      'it'
+    ],
+    textsVarName: 'trans'
+  }
+));
+
+app.use(favicon(path.join(__dirname ,'public/images/favicon.ico')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 require('./routes')(app);
-require('./socket')(io);
+require('./socket')(io, sessionMiddleware);
 
 server.listen(PORT, () => 
 {

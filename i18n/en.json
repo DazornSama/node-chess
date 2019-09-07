@@ -1,0 +1,56 @@
+{
+  "auth": {
+    "welcome_text": "Welcome",
+    "username_placeholder": "Username",
+    "password_placeholder": "Password",
+    "login_text": "Login",
+    "signup_text": "Sign Up",
+    "login_password_wrong_feedback": "The password is wrong",
+    "login_user_not_found_feedback": "The user doesn&apos;t exist",
+    "signup_password_not_empty_feedback": "The password mustn&apos;t",
+    "signup_username_in_use_feedback": "The username is already used",
+    "signup_success_feedback": "User created!<br>Now you can login"
+  },
+  "index": {
+    "menu": {
+      "profile_title": "Profile",
+      "play_title": "New game",
+      "rankings_title": "Ranking",
+      "settings_title": "Settings",
+      "logout_title": "Logout",
+      "help_title": "Help"
+    },
+    "profile": {
+      "head_title_text": "Profile"
+    },
+    "matchmaking": {
+      "head_title_text": "New game"
+    },
+    "rankings": {
+      "head_title_text": "Ranking"
+    },
+    "settings": {
+      "head_title_text": "Settings",
+      "language_text": "Language",
+      "language_english_text": "English",
+      "language_italian_text": "Italian"
+    },
+    "chat": {
+      "general_title": "General",
+      "ingame_title": "Game",
+      "connected_text": "Connected to the chat",
+      "disconnected_text": "Disconnected from the chat",
+      "tag_copied_to_clipboard_text": "User's tag copied on clipboard"
+    }
+  },
+  "footer": {
+    "users_online_text": "users online",
+    "feedback": {
+      "success_text": "Success",
+      "error_text": "Error",
+      "alert_text": "Alert",
+      "info_text": "Info"
+    },
+    "mine_message_user_text": "You"
+  }
+}

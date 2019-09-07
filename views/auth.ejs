@@ -5,25 +5,35 @@
   <link rel="stylesheet" type="text/css" href="css/auth.css">
 </head>
 <body onload="onLoad()">
-  <div id="auth-box">
-  <%- include('./shared/brand.ejs') %>
-    <div class="divider">
-      <button id="select-login-form" onclick="changeForm('login')" class="selected">Login</button>
-      <button id="select-signup-form" onclick="changeForm('signup')">Sign Up</button>
+  <div class="container">
+    <img id="logo" src="images/full_logo.png">
+    <div class="box">
+      <div class="box-head">
+        <h2><%= trans.auth.welcome_text %></h2>
+        <ul class="box-actions">
+          <li class="box-action disabled">
+            <i class="material-icons">security</i>
+          </li>
+        </ul>
+      </div>
+      <div class="box-body">
+        <form>
+          <div class="input">
+            <i class="material-icons">chevron_right</i>
+            <input type="text" name="username" placeholder="<%= trans.auth.username_placeholder %>" />
+          </div>
+          <div class="input">
+            <i class="material-icons">chevron_right</i>
+            <input type="password" name="password" placeholder="<%= trans.auth.password_placeholder %>" />
+          </div>
+        </form>
+      </div>
+      <div class="box-footer">
+        <button id="submit-login" class="button" disabled><%= trans.auth.login_text %></button>
+        <div class="spacer"></div>
+        <button id="submit-signup" class="button" disabled><%= trans.auth.signup_text %></button>
+      </div>
     </div>
-    <form id="login-form" class="selected">
-      <input type="text" name="username" placeholder="Username" />
-      <input type="password" name="password" placeholder="Password" />
-      <input type="submit" id="submit-login-form" value="Continue" />
-      <p class="validation-error"></p>
-    </form>
-    <form id="signup-form">
-      <input type="text" name="username" placeholder="Username" />
-      <input type="password" name="password" placeholder="Password" />
-      <input type="password" name="c-password" placeholder="Confirm Password" />
-      <input type="submit" id="submit-signup-form" value="Continue" />
-      <p class="validation-error"></p>
-    </form>
   </div>
   <%- include('./shared/footer.ejs') %>
   <script type="text/javascript" src="js/auth.js"></script>

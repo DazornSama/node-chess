@@ -7,6 +7,9 @@ module.exports = function(app)
   app.route('/')
     .get(controllers.views.index);
 
+  app.route('/logout')
+    .get(controllers.views.logout);
+
   app.route('/auth/signup')
     .post(controllers.auth.signup);
 
@@ -15,4 +18,7 @@ module.exports = function(app)
 
   app.route('/auth/validate')
     .post(controllers.auth.validate);
+
+  app.route('/lang')
+    .get(controllers.lang.get);
 }
