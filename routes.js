@@ -1,15 +1,25 @@
 'use strict';
 
+// Controllers object import
 const controllers = require('./controllers');
 
-module.exports = function(app)
+/**
+ * Defines website routing
+ * @param {Express.Application} app Express application object
+ */
+function routing(app)
 {
+  // GET requests
   app.route('/')
     .get(controllers.views.index);
 
   app.route('/logout')
     .get(controllers.views.logout);
 
+  app.route('/lang')
+    .get(controllers.lang.get);
+
+  // POST requests
   app.route('/auth/signup')
     .post(controllers.auth.signup);
 
@@ -18,7 +28,7 @@ module.exports = function(app)
 
   app.route('/auth/validate')
     .post(controllers.auth.validate);
+};
 
-  app.route('/lang')
-    .get(controllers.lang.get);
-}
+// Exposes module as a method
+module.exports = routing;

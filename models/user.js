@@ -6,6 +6,8 @@ const mongo = require('../helpers/mongo');
 const ObjectId = require('mongodb').ObjectId;
 const bcrypt = require('bcryptjs');
 
+const Game = require('./game');
+
 async function getById(id)
 {
   let db = await mongo();
@@ -16,6 +18,12 @@ async function getByName(username)
 {
   let db = await mongo();
   return await db.collection(COLLECTION_NAME).findOne({ username: username });
+}
+
+async function getByTag(tag)
+{
+  let db = await mongo();
+  return await db.collection(COLLECTION_NAME).findOne({ tag: tag });
 }
 
 async function create(username, password)
@@ -31,7 +39,7 @@ async function create(username, password)
       username: username,
       hash: hash,
       tag: await generateTag(hash),
-      created_at: new Date()
+      createdAt: new Date()
     };
 
     await db.collection(COLLECTION_NAME).insertOne(user);
@@ -97,6 +105,35 @@ async function unlinkFromSocket(id)
   await db.collection(COLLECTION_NAME).updateOne({ _id: new ObjectId(id) }, { $set: { socketId: undefined } });
 }
 
+async function isInGame(id, socketId)
+{
+  let db = await mongo();
+  let user = await getById(id);
+
+  if(user)
+  {
+    if(user.gameRoom) 
+    {
+      let game = await Game.getByRoomName(user.gameRoom);
+
+      if(game)
+      {
+        let player = game.players.find(x => x.userTag === user.tag);
+        player.socketId = socketId;
+
+        await Game.update(game);
+        return game;
+      }
+    }
+  }
+}
+
+async function linkToGame(tag, gameRoom)
+{
+  let db = await mongo();
+  await db.collection(COLLECTION_NAME).updateOne({ tag: tag }, { $set: { gameRoom: gameRoom } });
+}
+
 async function existUser(username)
 {
   let db = await mongo();
@@ -105,7 +142,7 @@ async function existUser(username)
 
 async function loginUser(user)
 {
-  user.last_time_seen = new Date();
+  user.lastTimeSeen = new Date();
   await update(user);
 }
 
@@ -187,9 +224,12 @@ async function isTagAlreadyUsed(tag)
 
 exports.getById = getById;
 exports.getByName = getByName;
+exports.getByTag = getByTag;
 exports.create = create;
 exports.update = update;
 exports.authenticate = authenticate;
 exports.validate = validate;
 exports.linkToSocket = linkToSocket;
 exports.unlinkFromSocket = unlinkFromSocket;
+exports.isInGame = isInGame;
+exports.linkToGame = linkToGame;

@@ -5,10 +5,37 @@ document.getElementById('page-feedback-messages').addEventListener('mouseover', 
   }
 });
 
-function feedbackUser(type, content, buttons) {
+function feedbackUser(type, content, onConfirm, onAbort) {
   let template = getTemplate('template-feedback-' + type);
   template.querySelector('.box-body').innerHTML = content;
   template.style.display = 'block';
+
+  if(onAbort) {
+    let args = onAbort.args ? onAbort.args : [];
+    template.querySelector('.box-footer .button.abort').addEventListener('click', () => {
+      onAbort.callback(false, args);
+      
+      template.classList.remove('keep');
+      removeFeedbackUser(template);
+    });
+  }
+
+  if(onConfirm) {
+    let args = onConfirm.args ? onConfirm.args : [];
+    template.querySelector('.box-footer .button.confirm').addEventListener('click', () => {
+      onConfirm.callback(true, args);
+      
+      template.classList.remove('keep');
+      removeFeedbackUser(template);
+    });
+
+    if(!onAbort) {
+      template.querySelector('.box-footer .button.abort').addEventListener('click', () => {
+        template.classList.remove('keep');
+        removeFeedbackUser(template)
+      });
+    }
+  }
 
   document.getElementById('page-feedback-messages').prepend(template);
 
@@ -18,6 +45,10 @@ function feedbackUser(type, content, buttons) {
 }
 
 function removeFeedbackUser(node) {
+  if(node.classList.contains('keep')) {
+    return;
+  }
+
   node.classList.add('hiding');
 
   setTimeout(() => {
@@ -60,7 +91,7 @@ async function ajaxRequest(uri, params, body) {
           result = JSON.parse(this.response);
         }
         catch(err) {
-          result = err;
+          result = this.response;
         }
 
         res(result);

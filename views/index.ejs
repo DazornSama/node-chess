@@ -47,10 +47,9 @@
           </li>
         </ul>
       </div>
-      <div class="box-footer">
-        <button class="button" title="<%= trans.index.menu.help_title %>">
-          <i class="material-icons">help_outline</i>
-        </button>
+      <div class="box-footer" title="<%= trans.index.menu.help_title %>">
+        <span id="users-number"></span>
+        <i class="material-icons">people</i>
       </div>
     </div>
     <!-- Profile -->
@@ -72,7 +71,12 @@
       </div>
       <div class="box-body">
         <div id="matchmaking-animation">
-          <i class="material-icons">track_changes</i>
+          <%= trans.index.matchmaking.searching_game_text %>
+          <span class="dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
         </div>
         <div class="input">
           <span class="prefix">#</span>
@@ -84,6 +88,29 @@
         <button class="button" id="search-game"><%= trans.index.matchmaking.search_game_text %></button>
         <div class="spacer"></div>
         <button class="button" id="ask-for-game" disabled><%= trans.index.matchmaking.invite_user_to_game_text %></button>
+      </div>
+    </div>
+    <!-- Game -->
+    <div class="box game" id="game">
+      <div class="box-body">
+        <div class="board-player up">
+          <span class="name"></span>
+          <div class="graveyard"></div>
+        </div>
+        <div id="board"></div>
+        <div class="board-player down">
+          <div class="graveyard"></div>
+          <span class="name"></span>
+        </div>
+        <div class="on-message">
+          <div class="banner">
+            <h2>Tocca a te</h2>
+          </div>
+        </div>
+        <span id="turn-time"></span>
+        <svg id="turn-time-ring" width="30" height="30">
+            <circle stroke="white" stroke-width="2" fill="transparent" r="13" cx="15" cy="15"/>
+          </svg>
       </div>
     </div>
     <!-- Rankings -->
@@ -148,6 +175,7 @@
   <script src="https://unpkg.com/simplebar@4.2.1/dist/simplebar.min.js"></script>
   <script src="js/meteor-emoji.min.js"></script>
   <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="js/engine/game.js"></script>
   <script type="text/javascript" src="js/engine/matchmaking.js"></script>
   <script type="text/javascript" src="js/engine/settings.js"></script>
   <script type="text/javascript" src="js/index.js"></script>

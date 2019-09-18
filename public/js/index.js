@@ -11,6 +11,7 @@ async function onLoad() {
 
   document.getElementById('user-language').addEventListener('change', onChangeLanguage);
   
+  document.querySelector('#matchmaking .box-body input').addEventListener('change', onKeyUpUserTag);
   document.querySelector('#matchmaking .box-body input').addEventListener('keyup', onKeyUpUserTag);
   document.getElementById('search-game').addEventListener('click', onSearchGame);
   document.getElementById('ask-for-game').addEventListener('click', onAskForGame);
@@ -66,12 +67,12 @@ function setupSocket() {
   socket = io();
 
   socket.on('connect', () => {
-    feedbackUser('info', i18n('index.chat.connected_text') + ' <b>Generale</b>');
+    feedbackUser('info', i18n('index.chat.connected_general_text'));
     document.querySelector('input[name="chat-message"]').disabled = false;
   });
 
   socket.on('disconnect', () => {
-    feedbackUser('alert', i18n('index.chat.disconnected_text') + ' <b>Generale</b>');
+    feedbackUser('alert', i18n('index.chat.disconnected_general_text'));
     document.querySelector('input[name="chat-message"]').disabled = true;
   });
 
@@ -101,6 +102,53 @@ function setupSocket() {
       scrollToChatBottom();
     }
   });
+
+  socket.on('ingame chat message', (username, tag, message) => {
+    let isChatSelected = document.getElementById('ingame-chat').classList.contains('active');
+    
+    let template = getTemplate('template-other-message');
+    template.setAttribute('data-tag', tag);
+    template.querySelector('.message-user').innerText = username + ' ' + tag;
+    template.querySelector('.message-content').innerText = message;
+    template.querySelector('.message-time').innerText = getNewMessageTime();
+
+    appendChatMessage('ingame-chat-messages', template);
+
+    if(!isChatSelected) {
+      document.getElementById('ingame-chat').classList.add('new');
+    }
+    else {
+      scrollToChatBottom();
+    }
+  })
+
+  socket.on('game found', (game) => {
+    onGameFound(game);
+  });
+
+  socket.on('ask for game', (username, tag) => {
+    let message = i18nData.index.matchmaking.ask_for_game_confirmation_text.replace('{0}', username)
+    feedbackUser('info-buttons',
+      message,
+      { callback: onAskForGameConfirm, args: [tag] },
+      { callback: onAskForGameConfirm, args: [tag] });
+  });
+
+  socket.on('ask for game error', (error) => {
+    onAskForGameError(error);
+  });
+
+  socket.on('next turn', (canMove, game) => {
+    onNextTurn(canMove, game);
+  });
+
+  socket.on('do movement', (move) => {
+    onDoMovement(move);
+  });
+
+  socket.on('deny movement', () => {
+    onDenyMovement();
+  });
 }
 
 function onMenuItemSelected(event) {
@@ -115,6 +163,12 @@ function onMenuItemSelected(event) {
 
     scrollToChatBottom();
     return;
+  }
+
+  if(target === 'matchmaking') {
+    if(userData.game) {
+      target = 'game';
+    }
   }
   
   document.querySelector('.box.game.active').classList.remove('active');
@@ -152,18 +206,21 @@ function onMessageComposed(event) {
   if(event.charCode === 13 || event.keyCode === 13) {
     let isGeneralChatSelected = document.getElementById('general-chat').classList.contains('active');
 
+    let template = getTemplate('template-mine-message');
+    template.querySelector('.message-content').innerText = event.target.value;
+    template.querySelector('.message-time').innerText = getNewMessageTime();
+
     if(isGeneralChatSelected) {
       socket.emit('general chat message', userData.username, userData.tag, event.target.value);
-      
-      let template = getTemplate('template-mine-message');
-      template.querySelector('.message-content').innerText = event.target.value;
-      template.querySelector('.message-time').innerText = getNewMessageTime();
       
       appendChatMessage('general-chat-messages', template);
       scrollToChatBottom();
     }
     else {
-      // TODO: gestire invio messaggio a chat riservata al gioco in corso
+      socket.emit('ingame chat message', userData.game.roomName, userData.username, userData.tag, event.target.value);
+      
+      appendChatMessage('ingame-chat-messages', template);
+      scrollToChatBottom();
     }
     
     event.target.value = '';

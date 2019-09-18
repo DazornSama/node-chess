@@ -16,8 +16,12 @@ function onSearchGame(event) {
     animation.classList.remove('searching');
 
     event.target.innerText = i18n('index.matchmaking.search_game_text');
+    socket.emit('abort search game');
+
+    document.querySelector('#matchmaking .box-body input').disabled = false;
   }
   else {
+    document.querySelector('#matchmaking .box-body input').disabled = true;
     document.getElementById('ask-for-game').disabled = true;
     animation.classList.add('searching');
 
@@ -28,5 +32,36 @@ function onSearchGame(event) {
 }
 
 function onAskForGame(event) {
+  let input = document.querySelector('#matchmaking .box-body input');
+  let tag = '#' + input.value;
 
+  event.target.classList.add('loading');
+  input.disabled = true;
+  document.getElementById('search-game').disabled = true;
+  
+  socket.emit('ask for game', userData.tag, tag);
+}
+
+function onGameFound(game) {
+  feedbackUser('success', i18n('index.matchmaking.game_found_text'));
+
+  socket.emit('join room', game.roomName);
+  userData.game = game;
+  document.getElementById('ingame-chat').disabled = false;
+  
+  feedbackUser('info', i18n('index.chat.connected_ingame_text'));
+  initGame();
+}
+
+function onAskForGameError(error) {
+  document.querySelector('#matchmaking .box-body input').disabled = false;
+  document.getElementById('search-game').disabled = false;
+  document.getElementById('ask-for-game').classList.remove('loading');
+
+  feedbackUser('error', i18n(error));
+}
+
+function onAskForGameConfirm(result, args) {
+  let tag = args[0];
+  socket.emit('ask for game result', result, userData.tag, tag);
 }

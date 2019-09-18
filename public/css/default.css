@@ -8,11 +8,15 @@ html, body {
 }
 
 body {
-  background: rgb(108,228,245);
+  /*background: rgb(108,228,245);
   background: -moz-linear-gradient(120deg, rgba(108,228,245,1) 0%, rgba(179,175,252,1) 100%);
   background: -webkit-linear-gradient(120deg, rgba(108,228,245,1) 0%, rgba(179,175,252,1) 100%);
   background: linear-gradient(120deg, rgba(108,228,245,1) 0%, rgba(179,175,252,1) 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#6ce4f5",endColorstr="#b3affc",GradientType=1);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#6ce4f5",endColorstr="#b3affc",GradientType=1);*/
+  background-image: url(https://cdn.shopify.com/s/files/1/1970/9573/products/1593-2x2-tile_1024x1024.jpg?v=1495157192);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .container {
@@ -394,7 +398,7 @@ form .input:not(:last-child) {
 }
 
 .button.loading {
-  color: transparent;
+  color: transparent !important;
   transition: 0s;
 }
 

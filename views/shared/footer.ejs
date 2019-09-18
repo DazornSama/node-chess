@@ -1,7 +1,7 @@
 <footer>
-  <span class="users-online">
+  <!--<span class="users-online">
     <span id="users-number"></span> <%= trans.footer.users_online_text %>
-  </span>
+  </span>-->
   <b>&copy; Online Chess | 2019</b>
 </footer>
 <div id="page-feedback-messages"></div>
@@ -42,6 +42,22 @@
     </div>
     <div class="box-body"></div>
   </div>
+  <div class="box feedback-info keep" id="template-feedback-info-buttons">
+    <div class="box-head">
+      <h2><%= trans.footer.feedback.info_text %></h2>
+      <ul class="box-actions">
+        <li class="box-action disabled">
+          <i class="material-icons">notifications</i>
+        </li>
+      </ul>
+    </div>
+    <div class="box-body"></div>
+    <div class="box-footer">
+      <button class="button abort"><%= trans.footer.feedback.info_abort_text %></button>
+      <div class="spacer"></div>
+      <button class="button confirm"><%= trans.footer.feedback.info_confirm_text %></button>
+    </div>
+  </div>
   <div class="box feedback-info" id="template-feedback-info">
     <div class="box-head">
       <h2><%= trans.footer.feedback.info_text %></h2>
@@ -67,6 +83,8 @@
     </div>
     <span class="message-time"></span>
   </li>
+  <div class="board-tile" id="template-board-tile"></div>
+  <div class="board-tile-limit" id="template-board-tile-limit"></div>
 </div>
 <script type="text/javascript" src="js/default.js"></script>
 <script type="text/javascript">
