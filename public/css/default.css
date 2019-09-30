@@ -420,3 +420,32 @@ form .input:not(:last-child) {
 }
 
 /* BUTTONS */
+
+@media screen and (max-width: 900px) and (max-height: 900px) {
+  #page-feedback-messages .box .box-head {
+    display: none;
+  }
+
+  #page-feedback-messages .box .box-body {
+    border-radius: 8px;
+  }
+
+  .box.feedback-success .box-body {
+    background-color: #81C784 !important;
+    color: white !important;
+  }
+  
+  .box.feedback-error .box-body {
+    background-color: #E57373 !important;
+    color: white !important;
+  }
+  
+  .box.feedback-alert .box-body {
+    background-color: #FFD54F !important;
+  }
+  
+  .box.feedback-info .box-body {
+    background-color: #64B5F6 !important;
+    color: white !important;
+  }
+}

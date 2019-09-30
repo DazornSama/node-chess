@@ -389,7 +389,7 @@ var Game = (function() {
 
   self.setupGameMoves = function() {
     let body = GameUtils.GAME_CONTAINER.querySelector('.moves');
-    body.style.height = GameUtils.GAME_CONTAINER.clientHeight - 40;
+    body.style.height = (GameUtils.GAME_CONTAINER.clientHeight - 40) + 'px';
   },
 
   /**

@@ -520,7 +520,7 @@
 }
 
 #game .board-player .graveyard svg {
-  height: 36px;
+  height: 24px;
   width: auto;
   stroke-width: 0.5px;
   fill: black;
@@ -783,6 +783,14 @@
 
   #board .board-tile svg {
     height: 26px;
+  }
+
+  #game .board-player .graveyard {
+    font-size: 11px;
+  }
+
+  #game .board-player .graveyard svg {
+    height: 20px;
   }
 
   footer {
