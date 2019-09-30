@@ -39,6 +39,7 @@ async function create(username, password)
       username: username,
       hash: hash,
       tag: await generateTag(hash),
+      points: 0,
       createdAt: new Date()
     };
 
@@ -124,6 +125,8 @@ async function isInGame(id, socketId)
         await Game.update(game);
         return game;
       }
+
+      return false;
     }
   }
 }

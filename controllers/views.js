@@ -2,6 +2,7 @@
 
 const path = require('path');
 const User = require('../models/user');
+const Game = require('../models/game');
 
 exports.index = async function(req, res)
 {
@@ -22,3 +23,9 @@ exports.logout = async function(req, res)
   req.session.destroy();
   res.render(path.join(__dirname + '/../views/logout.ejs'), { user: undefined });
 }
+
+//exports.spectate = async function (req, res)
+//{
+  //let game = await Game.getByRoomName(parseInt(req.params.room));
+  //res.render(path.join(__dirname + '/../views/index.ejs'), { user: user, game: game });
+//}

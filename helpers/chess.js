@@ -46,7 +46,7 @@ function calcAllPossibleMoves(board, game, player)
   let moves = [];
 
   let foe = game.players.find(x => x !== player);
-  let units = player.units.concat(foe.units);
+  let units = cloneObjectArray(player.units).concat(foe.units);
 
   let cheated = hasBoardBeenEdited(board, units);
   if(cheated)
@@ -61,9 +61,15 @@ function calcAllPossibleMoves(board, game, player)
     let moveData = {
       x: unit.x,
       y: unit.y,
+      u: unit.u,
       moves: []
     };
 
+    if(unit.u !== UNITS.TURRET && unit.u !== UNITS.KING)
+    {
+      unit.f = false;
+    }
+    
     switch(unit.u)
     {
       case UNITS.PAWN:
@@ -93,6 +99,66 @@ function calcAllPossibleMoves(board, game, player)
   }
 
   return moves;
+}
+
+function onKingUnderChess(moves, board, game, player)
+{
+  let illegalMoves = [];
+
+  let foe = game.players.find(x => x !== player);
+  let units = player.units.concat(foe.units);
+
+  let king = player.units.find(x => x.u === UNITS.KING);
+
+  let clonedMoves = cloneObjectArray(moves);
+
+  for(let i = 0; i < clonedMoves.length; i++)
+  {
+    let move = clonedMoves[i];
+    let clonedMs = cloneObjectArray(move.moves);
+
+    for(let j = (clonedMs.length - 1); j >= 0; j--)
+    {
+      let m = clonedMs[j];
+      let clonedBoard = cloneObjectArray(board);
+      let clonedUnits = cloneObjectArray(units);
+      let clonedFoeUnits = cloneObjectArray(foe.units);
+      let clonedKing = Object.assign({}, king);
+
+      if(clonedKing.x === move.x && clonedKing.y === move.y)
+      {
+        clonedKing.x = m.x;
+        clonedKing.y = m.y;
+      }
+      
+      clonedBoard.find(a => a.x === move.x && a.y === move.y).empty = true;
+      clonedBoard.find(a => a.x === m.x && a.y === m.y).empty = false;
+
+      let unit = clonedUnits.find(a => a.x === move.x && a.y === move.y);
+      unit.x = m.x;
+      unit.y = m.y;
+
+      let deadUnit = clonedFoeUnits.find(a => a.x === unit.x && a.y === unit.y);
+      if(deadUnit)
+      {
+        let start = clonedFoeUnits.indexOf(deadUnit);
+        clonedFoeUnits.splice(start, 1);
+      }
+
+      let kingUnderChess = isKingUnderChess(clonedBoard, clonedFoeUnits, clonedUnits, clonedKing);
+      if(kingUnderChess)
+      {
+        illegalMoves.push([i, j]);
+      }
+    }
+  }  
+
+  for(let i = 0; i < illegalMoves.length; i++)
+  {
+    moves[illegalMoves[i][0]].moves.splice(illegalMoves[i][1], 1);
+  }
+
+  return isKingUnderChess(board, foe.units, units, king);
 }
 
 function hasBoardBeenEdited(board, units)
@@ -160,8 +226,35 @@ function calcPawnAuthorizedMoves(board, units, x, y, side)
         continue;
       }
 
+      tile.first = length === 2 ? true : false;
+      tile.promote = isPawnAtLimit(relY, isRemote);
+
       moves.push(tile);
     }
+  }
+
+  for(let i = -1; i <= 1; i += 2)
+  {
+    let relX = x + i;
+    
+    let tile = getBoardTileByCoordinates(board, relX, y);
+    if(!tile)
+    {
+      continue;
+    }
+
+    let tileUnit = getUnitbyCoordinates(units, tile.x, tile.y);
+    
+    if(!isTileFullAndEnemyUnit(tile, tileUnit, side))
+    {
+      continue;
+    }
+    else if(!tileUnit.f)
+    {
+      continue;
+    }
+
+    moves.push(tile);
   }
 
   return moves;
@@ -176,6 +269,16 @@ function calcPawnMoveLength(y, isRemote)
   }
 
   return 1;
+}
+
+function isPawnAtLimit(y, isRemote) {
+  if(isRemote && y === 1 ||
+    !isRemote && y === 8)
+  {
+    return true;
+  }
+
+  return false;
 }
 
 function calcKnightAuthorizedMoves(board, units, x, y, side) 
@@ -293,7 +396,7 @@ function calcTurretAuthorizedMoves(board, units, x, y, side, single)
         {
           continue;
         }
-          
+         
         tiles.push(tile);
       }
       while(tile && !encounter && !single);
@@ -357,8 +460,120 @@ function calcQueenAuthorizedMoves(board, units, x, y, side) {
 function calcKingAuthorizedMoves(board, units, x, y, side) {
   let axisTiles = calcTurretAuthorizedMoves(board, units, x, y, side, true);
   let diagonalTiles = calcBishopAuthorizedMoves(board, units, x, y, side, true);
+  let castlingTiles = calcKingCastling(board, units, x, y, side);
 
-  return axisTiles.concat(diagonalTiles);
+  return axisTiles.concat(diagonalTiles).concat(castlingTiles);
+}
+
+function calcKingCastling(board, units, x, y, side) {
+  let tiles = [];
+
+  for(let i = -1; i <= 1; i += 2) 
+  {
+    let tile;
+    let encounter = false;
+    let relX = x;
+
+    let counter = 1;
+    let turretTile = undefined;
+    let kingTile = undefined;
+
+    do {
+      relX += i;
+
+      tile = getBoardTileByCoordinates(board, relX, y);
+
+      if(counter === 1)
+      {
+        turretTile = tile;
+      }
+      else if(counter === 2)
+      {
+        kingTile = tile;
+      }
+
+      counter++;
+
+      if(!tile || tile.empty) 
+      {
+        continue;
+      }
+
+      if(!tile.empty)
+      {
+        encounter = true;
+      }
+
+      let unitTile = getUnitbyCoordinates(units, tile.x, tile.y);
+      if(unitTile.u !== UNITS.TURRET || counter <= 3 && unitTile.u === UNITS.TURRET)
+      {
+        continue;
+      }
+
+      if(turretTile && kingTile)
+      {
+        let castling = {
+          empty: kingTile.empty,
+          x: kingTile.x,
+          y: kingTile.y,
+          side: {
+            empty: turretTile.empty,
+            x: turretTile.x,
+            y: turretTile.y,
+            originX: unitTile.x,
+            originY: unitTile.y,
+            type: 'castling'
+          }
+        };
+
+        tiles.push(castling);
+      }
+    }
+    while(tile && !encounter);
+  }
+
+  return tiles;
+}
+
+function isKingUnderChess(board, foeUnits, allUnits, kingUnit)
+{
+  let status = false;
+
+  for(let i = 0; i < foeUnits.length; i++)
+  {
+    let unit = foeUnits[i];
+    let moves = [];
+
+    switch(unit.u)
+    {
+      case UNITS.PAWN:
+        moves = calcPawnAuthorizedMoves(board, allUnits, unit.x, unit.y, unit.s);
+        break;
+      case UNITS.TURRET:
+        moves = calcTurretAuthorizedMoves(board, allUnits, unit.x, unit.y, unit.s);
+        break;
+      case UNITS.BISHOP:
+        moves = calcBishopAuthorizedMoves(board, allUnits, unit.x, unit.y, unit.s);
+        break;
+      case UNITS.KNIGHT:
+        moves = calcKnightAuthorizedMoves(board, allUnits, unit.x, unit.y, unit.s);
+        break;
+      case UNITS.QUEEN:
+        moves = calcQueenAuthorizedMoves(board, allUnits, unit.x, unit.y, unit.s);
+        break;
+      case UNITS.KING:
+        moves = calcKingAuthorizedMoves(board, allUnits, unit.x, unit.y, unit.s);
+        break;
+    }
+
+    if(moves.find(a => a.x === kingUnit.x && a.y === kingUnit.y))
+    {
+      status = true;
+    }
+  }
+
+
+  return status;
 }
 
 function isTileFullAndEnemyUnit(tile, unit, side)
@@ -399,5 +614,19 @@ function getUnitbyCoordinates(units, x, y)
   return units.find(a => a.x === x && a.y === y);
 }
 
+function cloneObjectArray(array)
+{
+  let clone = [];
+
+  for(let i = 0; i < array.length; i++)
+  {
+    clone[i] = Object.assign({}, array[i]);
+  }
+
+  return clone;
+}
+
 exports.generateUnits = generateUnits;
 exports.calcAllPossibleMoves = calcAllPossibleMoves;
+exports.onKingUnderChess = onKingUnderChess;
+exports.isKingUnderChess = isKingUnderChess;

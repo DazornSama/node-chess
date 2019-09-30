@@ -1,10 +1,11 @@
-const Settings = {
+const Profile = {
   /**
    * Initializes settings panel
    */
   init: async function () {
-    // Adds a "change" event listener to language select element
-    document.getElementById('user-language').addEventListener('change', this.onChangeLanguage);
+    let points = userData.points ? userData.points : 0;
+    
+    document.getElementById('user-points').innerText = points;
   },
 
   /**

@@ -31,6 +31,7 @@
       "invite_user_to_game_text": "Chiedi amichevole",
       "searching_game_text": "Ricerca giocatore",
       "game_found_text": "Giocatore trovato!",
+      "game_resumed_text": "Riconnesso alla partita!",
       "ask_for_game_no_user_text": "Tag giocatore non trovato",
       "ask_for_game_user_off_text": "Giocatore non connesso",
       "ask_for_game_user_ingame_text": "Giocatore non disponibile al momento",

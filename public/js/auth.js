@@ -26,10 +26,10 @@ async function onLoad() {
   {
     // Parses session item data as JSON object
     let data = JSON.parse(session);
-    // Request an auto-login from server
+    // Requests an auto-login from server
     let res = await ajaxRequest('/auth/validate', [], { id: data.id, hash: data.hash });
 
-    // Condition to check if server authorized the request
+    // Condition to check if server response is without errors
     if(res.isOk) {
       // Reloads the page
       window.location.reload();
@@ -49,12 +49,12 @@ async function inputValidation(event) {
   let value = event.target.value;
   let validation = true;
 
-  // Removes error class from target parent
+  // Removes "error" class from target parent
   event.target.parentNode.classList.remove('error');
 
   // Condition to check if value exists
   if(!value) {
-    // Adds error class to target parent
+    // Adds "error" class to target parent
     event.target.parentNode.classList.add('error');
     validation = false;
   }
@@ -72,10 +72,7 @@ function fastLogin(event) {
   // Condition to check if "enter" key was pressed
   if(event.charCode === 13 || event.keyCode === 13) {
     // Builds a DOM "click" event
-    let delegate = new Event('click');
-    // Sets "login" button as event target
-    e.target = document.getElementById('submit-login'); 
-
+    let delegate = new CustomEvent('click', { detail: { target: document.getElementById('submit-login') } });
     // Forces "login" event to be executed
     onLogin(delegate);
   }
@@ -86,60 +83,86 @@ function fastLogin(event) {
  * @param {Event} event DOM "click" event
  */
 async function onLogin(event) {
+  let target = event.target ? event.target : event.detail.target;
+
   // Gets "username" input value
   let username = document.querySelector('input[name="username"]').value;
   // Gets "password" input value
   let password = document.querySelector('input[name="password"]').value;
 
+  // Disabled "signup" button
   document.getElementById('submit-signup').disabled = true;
-  event.target.classList.add('loading');
+  // Adds "loading" class to event target
+  target.classList.add('loading');
 
+  // Requests credentials authorization from server
   let res = await ajaxRequest('/auth/login', [], { username: username, password: password });
   
-  event.target.classList.remove('loading');
+  // Removes "loading" class from event target
+  target.classList.remove('loading');
+  // Enables "signup" button
   document.getElementById('submit-signup').disabled = false;
 
+  // Condition to check if server response is without errors
   if(!res.isOk) {
+    // Notify the user with an error message
     feedbackUser('error', i18n(res.content));
   }
   else
   {
+    // Creates user session object
     let user = {
       id: res.content._id,
       hash: res.content.hash
     };
 
+    // Sets an item in sessionStorage for user session
     sessionStorage.setItem('user_session', JSON.stringify(user));
+    // Reloads the page
     window.location.reload();
   }
 }
+
 /**
  * Handler for "click" signup event
  * @param {Event} event DOM "click" event
  */
 async function onSignup(event) {
+  // Gets "username" input value
   let username = document.querySelector('input[name="username"]').value;
+  // Gets "password" input value
   let password = document.querySelector('input[name="password"]').value;
 
+  // Condition to check if password value exists
   if(!password) {
+    // Adds "error" class to password input parent
     document.querySelector('input[name="password"]').parentNode.classList.add('error');
+    // Notify the user with an alert message
     feedbackUser('alert', i18n('auth.signup_password_not_empty_feedback'));
     return;
   }
 
+  // Disabled "login" button
   document.getElementById('submit-login').disabled = true;
+  // Adds "loading" class to event target
   event.target.classList.add('loading');
 
+  // Requests credentials uniquity and account creation from server
   let res = await ajaxRequest('/auth/signup', [], { username: username, password: password });
 
+  // Removes "loading" class from event target
   event.target.classList.remove('loading');
+  // Enables "login" button
   document.getElementById('submit-login').disabled = false;
 
+  // Condition to check if server response is without errors
   if(!res.isOk) {
+    // Notify the user with an error message
     feedbackUser('error', i18n(res.content));
   }
   else
   {
+    // Notify the user with a success message
     feedbackUser('success', i18n('auth.signup_success_feedback'));
   }
 }

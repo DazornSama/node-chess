@@ -4,6 +4,7 @@
 const User = require('./models/user');
 const Matchmaking = require('./models/matchmaking');
 const Game = require('./models/game');
+const History = require('./models/history');
 
 /**
  * Configures socket communication logic
@@ -30,7 +31,8 @@ function configureSocket(io, session)
     // Condition to verify the user object exists
     if(!userId)
     {
-      // Forces the socketIO client to disconnect and exit
+      // Forces the socketIO client to disconnect and reload the page
+      io.to(socket.id).emit('force reload');
       socket.disconnect();
       return;
     }
@@ -44,8 +46,22 @@ function configureSocket(io, session)
     let game = await User.isInGame(userId);
     if(game)
     {
+      // Gets current user object
+      let user = await User.getById(userId);
+      // Gets current user's player object
+      let player = game.players.find(x => x.userTag === user.tag);
+      // Updates player's socketID value
+      player.socketId = socket.id;
+
+      // Updates current game status (on database)
+      await Game.update(game);
+      
+      // Gets current round's player
+      let nextPlayer = game.players.find(x => x.userTag === game.round.by);
+      let canMove = nextPlayer === player;
+
       // Notify current socketIO client reconnection to game
-      socket.emit('game resumed', game)
+      io.to(socket.id).emit('game resumed', canMove, game);
     }
 
     // SocketIO chat events handlers
@@ -60,8 +76,8 @@ function configureSocket(io, session)
     onAskForGameResult(io, socket);
     onGameReady(io, socket);
     onRequestAuthorizeMovement(io, socket);
+    onRequestPawnPromote(io, socket);
     onEndTurn(io, socket);
-    onTurnOutOfTime(socket);
   });
 }
 
@@ -267,11 +283,15 @@ function onGameReady(io, socket)
     {
       // Calculates all possible moves for the current board and units
       moves = Game.calcAllPossibleMoves(board, game, firstPlayer);
+      //Game.onKingUnderChess(moves, board, game, firstPlayer);
     }
     catch(err)
     {
-      // TODO: il player ha usato cheat
-      console.log(err);
+      // Declares the winner
+      let status = await onCheating(game);
+      // Notify players of game end
+      io.to(roomName).emit('game end', status);
+      return;
     }
 
     // Executes for each player in input array
@@ -286,6 +306,7 @@ function onGameReady(io, socket)
 
     // Updates current game status (on database)
     await Game.update(game);
+    startRoundCountdown(io, roomName, 0);
   });
 }
 
@@ -316,8 +337,11 @@ function onRequestAuthorizeMovement(io, socket)
     }
     catch(err)
     {
-      // TODO: il player ha usato cheat
-      console.log(err);
+      // Declares the winner
+      let status = await onCheating(game);
+      // Notify players of game end
+      io.to(roomName).emit('game end', status);
+      return;
     }
 
     // Condition to check if the move object is filled
@@ -333,6 +357,33 @@ function onRequestAuthorizeMovement(io, socket)
       let player = game.players.find(x => x.userTag === userTag);
       // Notify to player socketIO client he can not execute that move
       io.to(player.socketId).emit('deny movement');
+    }
+  });
+}
+
+function onRequestPawnPromote(io, socket)
+{
+  socket.on('request pawn promote', async (roomName, userTag, tileX, tileY, unit) =>
+  {
+    // Gets current game object
+    let game = await Game.getByRoomName(roomName);
+    // Condition to check if game exists
+    if(!game) 
+    {
+      return;
+    }
+
+    let pawn = Game.canPawnBePromoted(game, userTag, tileX, tileY);
+    if(pawn)
+    {
+      await Game.promotePawn(game, pawn, unit);
+      io.to(roomName).emit('do pawn promote', pawn);
+    }
+    else
+    {
+      let player = game.players.find(x => x.userTag === userTag);
+      // Notify to player socketIO client he can not execute that move
+      io.to(player.socketId).emit('deny pawn promote');
     }
   });
 }
@@ -357,24 +408,83 @@ function onEndTurn(io, socket)
     // Assigns the next move to the appropriate player
     let nextPlayer = Game.setNextPlayer(game);
     let moves;
+    let underChess = false;
 
     // Exceptions handler to catch a "cheating" error
     try
     {
       // Calculates all possible moves for the current board and units
       moves = Game.calcAllPossibleMoves(board, game, nextPlayer);
+      underChess = Game.onKingUnderChess(moves, board, game, nextPlayer);
+      Game.hasAlreadyDoneSpecialMovement(moves, nextPlayer);
+      
+      if(Game.isThreeLastMovesIdentically(game, game.players.find(a => a !== nextPlayer)))
+      {
+        // Declares draw
+        let status = await onDraw(game);
+        // Notify players of game end
+        io.to(roomName).emit('game end', status);
+        return;
+      }
+
+      if(Game.isAliveIllegalCombination(game))
+      {
+        // Declares draw
+        let status = await onDraw(game);
+        // Notify players of game end
+        io.to(roomName).emit('game end', status);
+        return;
+      }
+
+      // Condition to check if player has zero moves
+      let movesCount = 0;
+      for(let i = 0; i < moves.length; i++)
+      {
+        movesCount += moves[i].moves.length;
+      }
+
+      if(movesCount === 0)
+      {
+        let status;
+
+        if(Game.isKingUnderChess(board, game, nextPlayer))
+        {
+          // Declares draw
+          status = await onZeroMoves(game);
+        }
+        else
+        {
+          // Declares the winner
+          status = await onDraw(game);
+        }
+        
+        // Notify players of game end
+        io.to(roomName).emit('game end', status);
+        return;
+      }
     }
     catch(err)
     {
-      // TODO: il player ha usato cheat
-      console.log(err);
+      // Declares the winner
+      let status = await onCheating(game);
+      // Notify players of game end
+      io.to(roomName).emit('game end', status);
+      return;
     }
 
     // Executes for each player in input array
     await doForEachPlayer(game.players, async (player) => 
     {
-      let canMove = player === nextPlayer;
-      player.authorizedMoves = canMove ? moves : [];
+      let canMove = false;
+      player.authorizedMoves = [];
+      player.underChess = false;
+      
+      if(player === nextPlayer)
+      {
+        canMove = true;
+        player.authorizedMoves = moves;
+        player.underChess = underChess;
+      }
 
       // Notify to player socketIO client next turn
       io.to(player.socketId).emit('next turn', canMove, game);
@@ -382,35 +492,20 @@ function onEndTurn(io, socket)
 
     // Updates current game status (on database)
     await Game.update(game);
-    
-    // Current round timeout handler 
-    setTimeout(async () => {
-      // Gets current game object
-      let game = await Game.getByRoomName(roomName);
-      // Condition to check if game exists
-      if(!game) 
-      {
-        return;
-      }
-
-      // Condition to check if the passed round number is the current in game, gets executed after 63,6 seconds from next turn start
-      if(number === game.round.count) {
-        // Calculates difference between now and the time the game started
-        let diff = new Date() - game.round.startedAt;
-        console.log(diff);
-      }
-    }, 63600);
+    startRoundCountdown(io, roomName, number);
   });
 }
 
 /**
- * Handler for "turn out of time" socketIO event
- * @param {SocketIO.Socket} socket SocketIO socket object
+ * Start a 60 seconds countdown to check current turn timeout
+ * @param {SocketIO.Server} io SocketIO server object
+ * @param {String} roomName Game room name
+ * @param {Number} number Game turn number
  */
-function onTurnOutOfTime(socket)
+function startRoundCountdown(io, roomName, number)
 {
-  socket.on('turn out of time', async (roomName, number) =>
-  {
+  // Current round timeout handler 
+  setTimeout(async () => {
     // Gets current game object
     let game = await Game.getByRoomName(roomName);
     // Condition to check if game exists
@@ -419,9 +514,72 @@ function onTurnOutOfTime(socket)
       return;
     }
 
-    console.log(roomName, number);
-    // TODO: faccio vincere quello che stava aspettando la fine del turno dell'avversario
-  });
+    // Condition to check if the passed round number is the current in game, gets executed after 63,6 seconds from next turn start
+    if((number + 1) === game.round.count) {
+      // Declares winner
+      let status = await onTurnOutOfTime(game);
+      // Notify players of game end
+      io.to(game.roomName.toString()).emit('game end', status);
+    }
+  }, 61000);
+}
+
+/**
+ * Declares the winner and stores the game object
+ * @param {Object} game Game object
+ */
+async function onZeroMoves(game)
+{
+  let winnerTag = game.players.find(x => x.userTag !== game.round.by).userTag;
+  // Declares the winner of the game
+  await Game.declareWinner(game, winnerTag, Game.endReasons.CHECK_MATE);
+
+  // Notify to room socketIO clients win
+  await History.store(game);
+
+  return game.end;
+}
+
+/**
+ * Declares the winner and stores the game object
+ * @param {Object} game Game object
+ */
+async function onCheating(game) 
+{
+  let winnerTag = game.players.find(x => x.userTag !== game.round.by).userTag;
+  // Declares the winner of the game
+  await Game.declareWinner(game, winnerTag, Game.endReasons.CHEATING);
+
+  // Notify to room socketIO clients win
+  await History.store(game);
+
+  return game.end;
+}
+
+/**
+ * Declares the winner and stores the game object
+ * @param {Object} game Game object
+ */
+async function onTurnOutOfTime(game)
+{
+  // Declares the winner of the game
+  await Game.declareWinner(game, game.round.by, Game.endReasons.OUT_OF_TIME);
+
+  // Notify to room socketIO clients win
+  await History.store(game);
+
+  return game.end;
+}
+
+async function onDraw(game)
+{
+  // Declares a draw game
+  await Game.declareDraw(game);
+
+  // Notify to room socketIO clients draw
+  await History.store(game);
+
+  return game.end;
 }
 
 /**

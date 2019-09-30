@@ -54,7 +54,7 @@ app.use(i18n(
 // Loads website favicon
 app.use(favicon(path.join(__dirname ,'public/images/favicon.ico')));
 // Defines static-files folder
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/', express.static(path.join(__dirname, 'public')));
 
 // Defines website routes
 require('./routes')(app);
@@ -71,7 +71,7 @@ server.listen(PORT, () =>
  * Generate express session secrets array.
  * Only first element is used here.
  * All elements are used on verify step
- * @return {Array} Array of runtime generated secrets
+ * @return Array of runtime generated secrets
  */
 function generateSessionSecret()
 {
