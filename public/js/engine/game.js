@@ -31,6 +31,8 @@ var Game = (function() {
     // Renders the players
     await self.loadPlayers();
 
+    self.setupGameMoves();
+
     // Condition to check if game has been resumed
     if(!resumed) {
       // Notify the game is loaded and player is ready to play
@@ -382,6 +384,12 @@ var Game = (function() {
     let scroll = container.SimpleBar.getScrollElement();
     // Scrolls bottom at max possible value
     scroll.scrollTop = scroll.scrollHeight;
+  },
+
+
+  self.setupGameMoves = function() {
+    let body = GameUtils.GAME_CONTAINER.querySelector('.moves');
+    body.style.height = GameUtils.GAME_CONTAINER.clientHeight - 40;
   },
 
   /**

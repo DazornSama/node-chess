@@ -89,6 +89,7 @@ function onOrientationChange() {
         setTimeout(() => {
           // Re-render menu content after 0,1 seconds
           setupMenuBody();
+          Game.setupGameMoves();
         }, 100);
       break;
     // Case when device is in "portrait" mode
