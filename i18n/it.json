@@ -41,7 +41,9 @@
     "game": {
       "give_up_title": "Arrenditi",
       "deny_movement_text": "La mossa non è valida",
-      "turn_out_of_time_text": "KO"
+      "turn_out_of_time_text": "KO",
+      "moves_from_text": "Da",
+      "moves_to_text": "a"
     },
     "rankings": {
       "head_title_text": "Classifica"

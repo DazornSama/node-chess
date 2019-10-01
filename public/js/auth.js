@@ -21,7 +21,7 @@ async function onLoad() {
   document.getElementById('submit-login').addEventListener('click', onLogin);
 
   // Condition to check if exists a session item in sessionStorage
-  let session = sessionStorage.getItem('user_session');
+  let session = isMobile() ? localStorage.getItem('user_session') : sessionStorage.getItem('user_session');
   if(session)
   {
     // Parses session item data as JSON object
@@ -116,8 +116,15 @@ async function onLogin(event) {
       hash: res.content.hash
     };
 
-    // Sets an item in sessionStorage for user session
-    sessionStorage.setItem('user_session', JSON.stringify(user));
+    // Condition to check if device is mobile
+    if(isMobile()) {
+      // Sets an item in localStorage for user session
+      localStorage.setItem('user_session', JSON.stringify(user));
+    }
+    else {
+      // Sets an item in sessionStorage for user session
+      sessionStorage.setItem('user_session', JSON.stringify(user));
+    }
     // Reloads the page
     window.location.reload();
   }

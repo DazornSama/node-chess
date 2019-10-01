@@ -18,13 +18,32 @@
       "rankings_title": "Ranking",
       "settings_title": "Settings",
       "logout_title": "Logout",
-      "help_title": "Help"
+      "help_title": "Users online"
     },
     "profile": {
       "head_title_text": "Profile"
     },
     "matchmaking": {
-      "head_title_text": "New game"
+      "head_title_text": "New game",
+      "usertag_placeholder": "Tag utente",
+      "search_game_text": "Search game",
+      "abort_search_game_text": "Abort",
+      "invite_user_to_game_text": "Ask for friendly game",
+      "searching_game_text": "Searching opponent",
+      "game_found_text": "Opponent found!",
+      "game_resumed_text": "Reconnected to the match!",
+      "ask_for_game_no_user_text": "User&apos;s tag not found",
+      "ask_for_game_user_off_text": "User offline",
+      "ask_for_game_user_ingame_text": "User is busy right now",
+      "ask_for_game_confirmation_text": "User <b>{0}</b> challenge you, accept?",
+      "ask_for_game_aborted_text": "User didn&apos;t accepted your request"
+    },
+    "game": {
+      "give_up_title": "Give up",
+      "deny_movement_text": "Invalid move",
+      "turn_out_of_time_text": "KO",
+      "moves_from_text": "From",
+      "moves_to_text": "to"
     },
     "rankings": {
       "head_title_text": "Ranking"
@@ -38,9 +57,11 @@
     "chat": {
       "general_title": "General",
       "ingame_title": "Game",
-      "connected_text": "Connected to the chat",
-      "disconnected_text": "Disconnected from the chat",
-      "tag_copied_to_clipboard_text": "User's tag copied on clipboard"
+      "connected_general_text": "Connected to <b>General</b> chat",
+      "disconnected_general_text": "Disconnected from <b>General</b> chat",
+      "connected_ingame_text": "Connected to <b>Game</b> chat",
+      "disconnected_ingame_text": "Disconnected from <b>Game</b> chat",
+      "tag_copied_to_clipboard_text": "User&apos;s tag copied on clipboard"
     }
   },
   "footer": {
@@ -49,7 +70,9 @@
       "success_text": "Success",
       "error_text": "Error",
       "alert_text": "Alert",
-      "info_text": "Info"
+      "info_text": "Info",
+      "info_abort_text": "Abort",
+      "info_confirm_text": "Confirm"
     },
     "mine_message_user_text": "You"
   }

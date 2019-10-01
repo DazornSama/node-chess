@@ -465,6 +465,7 @@ function onEndTurn(io, socket)
     }
     catch(err)
     {
+      console.log(err);
       // Declares the winner
       let status = await onCheating(game);
       // Notify players of game end

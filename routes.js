@@ -16,9 +16,6 @@ function routing(app)
   app.route('/logout')
     .get(controllers.views.logout);
 
-  //app.route('/game/:room')
-  //  .get(controllers.views.spectate);
-
   app.route('/lang')
     .get(controllers.lang.get);
 

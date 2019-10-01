@@ -351,14 +351,19 @@ var Game = (function() {
    * @param {Array} rounds Game's moves rounds
    */
   self.renderGameMoves = async function(rounds) {
+    // Gets game moves history container
     let container = GameUtils.GAME_CONTAINER.querySelector('.moves');
     
+    // Condition to check if container has SimpleBar object inside
     if(!container.SimpleBar) {
+      // Instantiates a new SimpleBar object for container
       new SimpleBar(container);
     }
     
     let doneRounds = container.querySelectorAll('.move').length;
+    // Cycle from already rendered game rounds count to total game rounds count
     for(let i = doneRounds; i < rounds.length; i++) {
+      // Gets current round
       let round = rounds[i];
 
       let username = self.data.players.find(x => x.userTag === round.by).username;
@@ -367,6 +372,7 @@ var Game = (function() {
 
       let sprite = await self.unitNumberToSprite(round.move.u);
 
+      // Gets move history template
       let move = getTemplate('template-round-move');
       move.querySelector('.move-number').innerText = round.number;
       move.querySelector('.move-username').innerText = username;
@@ -376,6 +382,7 @@ var Game = (function() {
 
       move.querySelector('.move-attack').style.display =  round.move.empty ? 'none' : 'inline';
 
+      // Appends move to game moves history list
       container.SimpleBar.getContentElement().append(move);
     }
 
@@ -387,6 +394,9 @@ var Game = (function() {
   },
 
 
+  /**
+   * Adapt game moves history list on orientation change
+   */
   self.setupGameMoves = function() {
     let body = GameUtils.GAME_CONTAINER.querySelector('.moves');
     body.style.height = (GameUtils.GAME_CONTAINER.clientHeight - 40) + 'px';
@@ -399,6 +409,7 @@ var Game = (function() {
   self.renderKingUnderChess = async function (underChess, king) {
     let tile = self.getBoardTileByCoordinates(king.y, king.x);
     
+    // Condition to check if king is under chess status
     if(underChess) {
       self.underChess = true;
       tile.classList.add('under-chess');  
