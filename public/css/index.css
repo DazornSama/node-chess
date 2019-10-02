@@ -225,16 +225,75 @@
 
 #profile .box-body {
   display: flex;
+  justify-content: space-between;
+}
 
+#profile .box-body .user-info, #profile .box-body .user-points {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+#profile .box-body .user-info {
+  width: 250px;
+}
+
+#profile .box-body .user-points {
+  margin-left: 20px;
+  flex: 1;
+  border-radius: 3px;
+}
+
+#profile .box-body span.chip {
+  display: block;
+  padding: 20px 12px;
+  background-color: #ebebeb;
+  color: #292929;
+  border-radius: 3px;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+#profile .box-body span.chip:not(:last-child) {
+  margin-bottom: 12px;
+}
+
+#profile .box-body span.chip#user-game-total {
+  background-color: #64B5F6;
+  color: white;
+}
+
+#profile .box-body span.chip#user-game-won {
+  background-color: #81C784;
+  color: white;
+}
+
+#profile .box-body span.chip#user-game-lost {
+  background-color: #E57373;
+  color: white;
+}
+
+#profile .box-body span.chip img {
+  height: 19px;
+  width: auto;
+  vertical-align: middle;
+}
+
+#profile .box-body .jumbo {
+  flex: 1;
+  display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 20px;
 }
 
-#profile .box-body img {
-  width: 48px;
+#profile .box-body .jumbo img {
+  height: 60px;
+  width: auto;
 }
 
-#profile .box-body span {
+#profile .box-body span#user-points-now {
   margin-left: 12px;
   font-size: 24px;
   font-weight: bold;
@@ -290,6 +349,46 @@
 
 #matchmaking-animation .dots span:nth-child(3) {
   animation: movingDot 1.2s .2s infinite;
+}
+
+#rankings .box-body .rows {
+  height: 100%;
+}
+
+#rankings .box-body .row {
+  display: flex;
+  padding: 12px;
+  background-color: #ebebeb;
+  color: #292929;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+
+#rankings .box-body .row.medal {
+  font-weight: bold;
+}
+
+#rankings .box-body .row.me {
+  background-color: #64B5F6;
+}
+
+#rankings .box-body .row:not(:last-child) {
+  margin-bottom: 12px;
+}
+
+#rankings .box-body .row .row-position {
+  width: 50px;
+}
+
+#rankings .box-body .row .row-points {
+  flex: 1;
+  text-align: right;
+}
+
+#rankings .box-body .row img {
+  height: 18px;
+  width: auto;
+  vertical-align: middle;
 }
 
 #pawn-promote {
@@ -557,7 +656,8 @@
   border-color: transparent white transparent transparent;
 }
 
-#game .on-message {
+#game .on-message,
+#game .on-end {
   position: absolute;
   top: 0;
   left: 0;
@@ -568,16 +668,19 @@
   height: 100%;
 }
 
-#game .on-message.active {
+#game .on-message.active,
+#game .on-end.active {
   display: flex;
 }
 
-#game .on-message .banner {
+#game .on-message .banner,
+#game .on-end .banner {
   display: none;
   animation: hideNewTurnBanner .3s linear;
 }
 
-#game .on-message .banner.animating {
+#game .on-message .banner.animating,
+#game .on-end .banner.animating {
   display: block;
   width: 100%;
   text-align: center;
@@ -585,12 +688,14 @@
   animation: showNewTurnBanner .3s linear;
 }
 
-#game .on-message .banner h2 {
+#game .on-message .banner h2,
+#game .on-end .banner h2 {
   visibility: hidden;
   text-transform: uppercase;
 }
 
-#game .on-message .banner h2.animating {
+#game .on-message .banner h2.animating,
+#game .on-end .banner h2.animating {
   visibility: visible;
   animation: showNewTurnText .3s linear;
 }
@@ -780,6 +885,10 @@
 @media screen and (max-width: 900px) and (max-height: 900px) {
   #hide-chat, #show-chat {
     display: none;
+  }
+
+  #profile .box-body span.chip {
+    padding: 8px 12px;
   }
 
   #board .board-tile svg {

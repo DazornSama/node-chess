@@ -21,7 +21,11 @@
       "help_title": "Utenti online"
     },
     "profile": {
-      "head_title_text": "Profilo"
+      "head_title_text": "Profilo",
+      "games_total_text": "partite",
+      "games_won_text": "vittorie",
+      "games_lost_text": "sconfitte",
+      "points_record_text": "Ultimo record"
     },
     "matchmaking": {
       "head_title_text": "Nuova partita",
@@ -43,7 +47,10 @@
       "deny_movement_text": "La mossa non è valida",
       "turn_out_of_time_text": "KO",
       "moves_from_text": "Da",
-      "moves_to_text": "a"
+      "moves_to_text": "a",
+      "end_win_text": "Hai vinto",
+      "end_lose_text": "Hai perso",
+      "end_draw_text": "Pareggio"
     },
     "rankings": {
       "head_title_text": "Classifica"

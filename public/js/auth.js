@@ -171,5 +171,8 @@ async function onSignup(event) {
   {
     // Notify the user with a success message
     feedbackUser('success', i18n('auth.signup_success_feedback'));
+    let delegate = new CustomEvent('click', { detail: { target: document.getElementById('submit-login') } });
+    // Forces "login" event to be executed
+    onLogin(delegate);
   }
 }

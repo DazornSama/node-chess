@@ -38,6 +38,8 @@ async function onLoad() {
   await Profile.init();
   // Awaits matchmaking DOM initialization
   await Matchmaking.init();
+  // Awaits rankings DOM initialization
+  await Rankings.init();
   // Awaits settings DOM initialization
   await Settings.init();
 
@@ -90,6 +92,7 @@ function onOrientationChange() {
           // Re-render menu content after 0,1 seconds
           setupMenuBody();
           Game.setupGameMoves();
+          Rankings.setupList();
         }, 100);
       break;
     // Case when device is in "portrait" mode
@@ -137,7 +140,7 @@ function setupSocket() {
  * Handler for "click" menu button event
  * @param {Event} event DOM "click" event
  */
-function onMenuItemSelected(event) {
+async function onMenuItemSelected(event) {
   // Search element with "button" class in target's parents
   let button = searchForNodeInParent(event.target, 'button');
   // Gets the button's targetted panel
@@ -165,6 +168,12 @@ function onMenuItemSelected(event) {
       // Sets the target equal to game panel
       target = 'game';
     }
+  }
+  else if(target === 'profile') {
+    await Profile.init();
+  }
+  else if(target === 'rankings') {
+    await Rankings.init();
   }
   
   // Removes "active" class from all panels

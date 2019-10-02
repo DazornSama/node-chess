@@ -564,7 +564,8 @@ async function onCheating(game)
 async function onTurnOutOfTime(game)
 {
   // Declares the winner of the game
-  await Game.declareWinner(game, game.round.by, Game.endReasons.OUT_OF_TIME);
+  let winnerTag = game.players.find(x => x.userTag !== game.round.by).userTag;
+  await Game.declareWinner(game, winnerTag, Game.endReasons.OUT_OF_TIME);
 
   // Notify to room socketIO clients win
   await History.store(game);

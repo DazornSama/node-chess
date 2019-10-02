@@ -47,6 +47,11 @@ var Game = (function() {
     // Sets the board with equal as its height
     GameUtils.BOARD_CONTAINER.style.width = GameUtils.BOARD_CONTAINER.clientHeight + 'px';
 
+    // Condition to check if board has already been rendered
+    if(GameUtils.BOARD_CONTAINER.classList.contains('rendered')) {
+      return;
+    }
+
     // Loop cycle to build the board
     // [0][A][B][C][D][E][F][G][H][0]
     // [1][X][X][X][X][X][X][X][X][1]
@@ -90,6 +95,7 @@ var Game = (function() {
 
         // Appends tile to board
         GameUtils.BOARD_CONTAINER.append(template);
+        GameUtils.BOARD_CONTAINER.classList.add('rendered');
       }
     }
   
@@ -241,23 +247,56 @@ var Game = (function() {
    * @param {Object} status 
    */
   self.onGameEnd = async function(data) {
+    let message;
+
     switch(data.status) {
       case 0:
       case 2: 
       case 3:
         if(data.by === userData.tag) {
-          alert('HAI VINTO');
+          message = i18n('index.game.end_win_text');
         }
         else {
-          alert('HAI PERSO');
+          message = i18n('index.game.end_lose_text');
         }
         break;
       case 1:
-        alert('PAREGGIO');
+        message = i18n('index.game.end_draw_text');
         break;
     }
+      
+    self.renderGameEnd(message);
+  },
 
-    window.location.reload();
+  /**
+   * Renders game end reason message
+   * @param {String} message End message
+   */
+  self.renderGameEnd = async function(message) {
+    let container = GameUtils.GAME_CONTAINER.querySelector('.on-end');
+    let banner = container.querySelector('.banner');
+    let bannerText = banner.querySelector('h2');
+
+    bannerText.innerText = message;
+
+    // Adds "active" class to message container
+    container.classList.add('active');
+    // Adds "animating" class to message banner
+    banner.classList.add('animating');
+
+    setTimeout(() => {
+      // Adds "animating" class to banner text after 0,3 seconds
+      bannerText.classList.add('animating');
+
+      setTimeout(() => {
+        // Removes all animations classes after 1,6 seconds
+        banner.classList.remove('animating');
+        bannerText.classList.remove('animating');
+        container.classList.remove('active');
+        
+        window.location.reload();
+      }, 3300);
+    }, 300);
   },
 
   /**

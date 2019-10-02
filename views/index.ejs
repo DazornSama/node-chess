@@ -59,8 +59,25 @@
         <ul class="box-actions"></ul>
       </div>
       <div class="box-body">
-        <img src="images/points.png">
-        <span id="user-points"></span>
+        <div class="user-info">
+          <span class="chip"><%= user.username %></span>
+          <span class="chip"><%= user.tag %></span>
+          <span class="chip">
+            <%= trans.index.profile.points_record_text %>
+            <span style="float:right;">
+              <img src="images/trophy.png"> <span id="user-points-record"></span>
+            </span>
+          </span>
+          <span class="chip" id="user-game-total"></span>
+          <span class="chip" id="user-game-won"></span>
+          <span class="chip" id="user-game-lost"></span>
+        </div>
+        <div class="user-points">
+          <div class="jumbo">
+            <img src="images/trophy.png">
+            <span id="user-points-now"></span>
+          </div>
+        </div>
       </div>
     </div>
     <!-- Matchmaking -->
@@ -108,6 +125,11 @@
             <h2>Tocca a te</h2>
           </div>
         </div>
+        <div class="on-end">
+          <div class="banner">
+            <h2></h2>
+          </div>
+        </div>
         <span id="turn-time"></span>
         <svg id="turn-time-ring" width="30" height="30">
           <circle stroke="white" stroke-width="2" fill="transparent" r="13" cx="15" cy="15"/>
@@ -135,8 +157,7 @@
         <ul class="box-actions"></ul>
       </div>
       <div class="box-body">
-      </div>
-      <div class="box-footer">
+        <div class="rows"></div>
       </div>
     </div>
     <!-- Settings -->
@@ -153,8 +174,6 @@
             <option value="it" <%= (lang === 'it' ? 'selected' : '') %>><%= trans.index.settings.language_italian_text %></option>
           </select>
         </div>
-      </div>
-      <div class="box-footer">
       </div>
     </div>
     <!-- Chat -->
@@ -193,6 +212,7 @@
   <script type="text/javascript" src="js/engine/game.js"></script>
   <script type="text/javascript" src="js/engine/profile.js"></script>
   <script type="text/javascript" src="js/engine/matchmaking.js"></script>
+  <script type="text/javascript" src="js/engine/rankings.js"></script>
   <script type="text/javascript" src="js/engine/settings.js"></script>
   <script type="text/javascript" src="js/socket.js"></script>
   <script type="text/javascript" src="js/index.js"></script>

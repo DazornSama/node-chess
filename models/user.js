@@ -66,6 +66,7 @@ async function create(username, password)
       hash: hash,
       tag: await generateTag(hash),
       points: 0,
+      record: 0,
       createdAt: new Date()
     };
 
@@ -220,6 +221,29 @@ async function linkToGame(tag, gameRoom)
   await db.collection(COLLECTION_NAME).updateOne({ tag: tag }, { $set: { gameRoom: gameRoom } });
 }
 
+async function getPoints(tag)
+{
+  let user = await getByTag(tag);
+  return {
+    record: user.record ? user.record : 0,
+    now: user.points ? user.points : 0
+  };
+}
+
+async function getTop100() {
+  let db = await mongo();
+  let users = await db.collection(COLLECTION_NAME).find().sort( { points: - 1 } ).limit(100);
+
+  let top = [];
+
+  await db.documentsIterator(users, (user) => 
+  {
+    top.push(user);
+  });
+
+  return top;
+}
+
 /**
  * Checks if an user exists by username
  * @param {String} username User's username
@@ -364,3 +388,5 @@ exports.linkToSocket = linkToSocket;
 exports.unlinkFromSocket = unlinkFromSocket;
 exports.isInGame = isInGame;
 exports.linkToGame = linkToGame;
+exports.getPoints = getPoints;
+exports.getTop100 = getTop100;

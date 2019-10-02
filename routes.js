@@ -19,6 +19,12 @@ function routing(app)
   app.route('/lang')
     .get(controllers.lang.get);
 
+  app.route('/user/:userTag/games/stats')
+    .get(controllers.games.stats);
+
+  app.route('/users/top100')
+    .get(controllers.games.top100);
+
   // POST requests
   app.route('/auth/signup')
     .post(controllers.auth.signup);

@@ -27,6 +27,16 @@ async function connect()
 
   // Assigns current connection database to instance object 
   instance = client.db();
+  // Implements a custom method to cycle throught a set of documents (cursor)
+  instance.documentsIterator = async function(documents, callback)
+  {
+    let document;
+    // Executes since next document exists
+    while((document = await documents.next()))
+    {
+      await callback(document);
+    }
+  }
 
   return instance;
 }

@@ -611,6 +611,11 @@ async function calcEndGamePoints(userTag, winner, reason)
     user.points  = 7000;
   }
 
+  if(user.points > user.record)
+  {
+    user.record = user.points;
+  }
+
   // Updates user document
   await User.update(user);
 }
