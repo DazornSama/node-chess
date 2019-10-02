@@ -903,10 +903,6 @@
     height: 20px;
   }
 
-  footer {
-    display: none;
-  }
-  
   @media screen and (orientation:portrait) {
     #chat {
       display: block;

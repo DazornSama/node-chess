@@ -27,26 +27,6 @@ body {
   height: 100%;
 }
 
-footer {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  width: calc(100% - 40px);
-  color: white;
-}
-
-footer .users-online {
-  float: left;
-}
-
-footer #users-number {
-  font-weight: bold;
-}
-
-footer b {
-  float: right;
-}
-
 #templates {
   display: none;
 }
