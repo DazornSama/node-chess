@@ -6,6 +6,13 @@ const GameUtils = {
   SIDES: {
     LOCAL: 'l',
     REMOTE: 'r'
+  },
+  SOUNDS: {
+    MOVE: new Audio('sounds/move.mp3'),
+    KILL: new Audio('sounds/kill.mp3'),
+    NEW_TURN: new Audio('sounds/new turn.wav'),
+    WIN: new Audio('sounds/win.mp3'),
+    TIMER: new Audio('sounds/timer.wav')
   }
 };
 
@@ -255,6 +262,7 @@ var Game = (function() {
       case 3:
         if(data.by === userData.tag) {
           message = i18n('index.game.end_win_text');
+          GameUtils.SOUNDS.WIN.play();
         }
         else {
           message = i18n('index.game.end_lose_text');
@@ -311,6 +319,8 @@ var Game = (function() {
     container.classList.add('active');
     // Adds "animating" class to message banner
     banner.classList.add('animating');
+
+    GameUtils.SOUNDS.NEW_TURN.play();
 
     setTimeout(() => {
       // Adds "animating" class to banner text after 0,3 seconds
@@ -539,6 +549,7 @@ var Game = (function() {
     
     // Adds "moving-from" to svg move start
     originSvg.classList.add('moving-from');
+    let deadUnitSvg = tile.querySelector('svg');
     // Sets move end tile content
     tile.innerHTML = '';
   
@@ -564,6 +575,13 @@ var Game = (function() {
       }, 1000);
     }
   
+    if(deadUnitSvg) {
+      GameUtils.SOUNDS.KILL.play();
+    }
+    else {
+      GameUtils.SOUNDS.MOVE.play();
+    }
+
     setTimeout(() => {
       // All that scope is executed after 0,25 seconds
       // Removes sprite from move start tile
@@ -628,11 +646,24 @@ var Game = (function() {
         tileSvg.classList.remove('moving-to');
 
         if(move.side) {
+          
           self.onDoMovement(move.side, true);
           //socket.emit('request authorize movement', self.data.roomName, userData.tag, self.boardHtmlToArray(), move.side.originX, move.side.originY, move.side.x, move.side.y);
         }
       }, 250);
     }, 250);
+
+    setTimeout(() => {
+      
+      if(deadUnitSvg) {
+        GameUtils.SOUNDS.KILL.pause();
+        GameUtils.SOUNDS.KILL.currentTime = 0;
+      }
+      else {
+        GameUtils.SOUNDS.MOVE.pause();
+        GameUtils.SOUNDS.MOVE.currentTime = 0;
+      }
+    }, 1000);
   },
 
   /**
@@ -916,6 +947,12 @@ var Game = (function() {
       if(s <= 0) {
         // Stops turn with timeout error
         self.stopCurrentTurnCountdown(true);
+      }
+
+      GameUtils.SOUNDS.TIMER.volume = self.isMyTurn ? 1 : 0.5;
+
+      if(GameUtils.SOUNDS.TIMER.paused) {
+        GameUtils.SOUNDS.TIMER.play();
       }
     }, 1000);
   },

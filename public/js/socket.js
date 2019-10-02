@@ -57,6 +57,7 @@ function SocketInterface() {
     if(!isChatSelected) {
       // Adds "new" class to targetted chat's button
       document.getElementById(chatId + '-chat').classList.add('new');
+      new Audio('sounds/new message.mp3').play();
     }
     else {
       // Scrolls chat to the last message
