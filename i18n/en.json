@@ -75,5 +75,10 @@
       "info_confirm_text": "Confirm"
     },
     "mine_message_user_text": "You"
+  },
+  "images": {
+    "crown_logo_alt": "NodeChessOnline logo",
+    "trophy_alt": "Trophies",
+    "infinite_loader_alt": "Infinite loading GIF"
   }
 }
