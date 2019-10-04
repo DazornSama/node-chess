@@ -1,6 +1,6 @@
 <div id="page-feedback-messages"></div>
 <div id="page-infinite-loader">
-  <img src="images/page-infinite-loader.svg">
+  <img alt="<%= trans.images.infinite_loader_alt %>" src="images/page-infinite-loader.svg">
 </div>
 <div id="templates">
   <div class="box feedback-success" id="template-feedback-success">
@@ -63,24 +63,26 @@
     </div>
     <div class="box-body"></div>
   </div>
-  <li class="clearfix" id="template-other-message">
-    <div class="message">
-      <span class="message-user"></span>
-      <p class="message-content"></p>
-    </div>
-    <span class="message-time"></span>
-  </li>
-  <li class="clearfix mine" id="template-mine-message">
-    <div class="message">
-      <span class="message-user"><%= trans.footer.mine_message_user_text %></span>
-      <p class="message-content"></p>
-    </div>
-    <span class="message-time"></span>
-  </li>
+  <ul>
+    <li class="clearfix" id="template-other-message">
+      <div class="message">
+        <span class="message-user"></span>
+        <p class="message-content"></p>
+      </div>
+      <span class="message-time"></span>
+    </li>
+    <li class="clearfix mine" id="template-mine-message">
+      <div class="message">
+        <span class="message-user"><%= trans.footer.mine_message_user_text %></span>
+        <p class="message-content"></p>
+      </div>
+      <span class="message-time"></span>
+    </li>
+  </ul>
   <div class="board-tile" id="template-board-tile"></div>
   <div class="board-tile-limit" id="template-board-tile-limit"></div>
   <div class="move" id="template-round-move">
-    <b><span class="move-number"></span></b> - <b><span class="move-username"></b></span><br>
+    <b><span class="move-number"></span></b> - <b><span class="move-username"></span></b><br>
     <span class="move-sprite"></span>
     <span class="move-attack">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" class="move-attack">
@@ -96,7 +98,7 @@
     <span class="row-points"></span>
   </div>
 </div>
-<script type="text/javascript" src="js/default.js"></script>
+<script src="js/default.js"></script>
 <script type="text/javascript">
   const i18nData = JSON.parse('<%- JSON.stringify(trans) %>');
 <% if (user)  { %>

@@ -12,6 +12,7 @@ const GameUtils = {
     KILL: new Audio('sounds/kill.mp3'),
     NEW_TURN: new Audio('sounds/new turn.wav'),
     WIN: new Audio('sounds/win.mp3'),
+    LOSE: new Audio('sounds/lose.mp3'),
     TIMER: new Audio('sounds/timer.wav')
   }
 };
@@ -266,6 +267,7 @@ var Game = (function() {
         }
         else {
           message = i18n('index.game.end_lose_text');
+          GameUtils.SOUNDS.LOSE.play();
         }
         break;
       case 1:
@@ -913,6 +915,8 @@ var Game = (function() {
     let roundStart = new Date(self.data.round.startedAt);
     self.secondsToTurnTimeout = 60 - Math.floor((new Date() - roundStart) / 1000);
   
+    GameUtils.SOUNDS.TIMER.play();
+
     // Sets an interval each 1 seconds
     self.turnCountdown = setInterval(() => {
       // Decrease seconds from timeout by 1
@@ -949,7 +953,7 @@ var Game = (function() {
         self.stopCurrentTurnCountdown(true);
       }
 
-      GameUtils.SOUNDS.TIMER.volume = self.isMyTurn ? 1 : 0.5;
+      GameUtils.SOUNDS.TIMER.volume = self.isMyTurn ? 1 : 0.2;
 
       if(GameUtils.SOUNDS.TIMER.paused) {
         GameUtils.SOUNDS.TIMER.play();

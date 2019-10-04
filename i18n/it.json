@@ -82,5 +82,10 @@
       "info_confirm_text": "Conferma"
     },
     "mine_message_user_text": "Tu"
+  },
+  "images": {
+    "crown_logo_alt": "NodeChessOnline logo",
+    "trophy_alt": "Trofei",
+    "infinite_loader_alt": "Infinite lodaing gif"
   }
 }

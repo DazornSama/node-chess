@@ -10,7 +10,7 @@
     <!-- Menu -->
     <div class="box" id="menu">
       <div class="box-head">
-        <img src="images/crown_logo.png" title="Online Chess">
+        <img alt="<%= trans.images.crown_logo_alt %>" src="images/crown_logo.png" title="Online Chess">
       </div>
       <div class="box-body">
         <ul>
@@ -65,7 +65,7 @@
           <span class="chip">
             <%= trans.index.profile.points_record_text %>
             <span style="float:right;">
-              <img src="images/trophy.png"> <span id="user-points-record"></span>
+              <img alt="<%= trans.images.trophy_alt %>" src="images/trophy.png"> <span id="user-points-record"></span>
             </span>
           </span>
           <span class="chip" id="user-game-total"></span>
@@ -74,7 +74,7 @@
         </div>
         <div class="user-points">
           <div class="jumbo">
-            <img src="images/trophy.png">
+            <img alt="<%= trans.images.trophy_alt %>" src="images/trophy.png">
             <span id="user-points-now"></span>
           </div>
         </div>
@@ -208,13 +208,13 @@
   <%- include('./shared/footer.ejs') %>
   <script src="https://unpkg.com/simplebar@4.2.1/dist/simplebar.min.js"></script>
   <script src="js/meteor-emoji.min.js"></script>
-  <script type="text/javascript" src="/socket.io/socket.io.js"></script>
-  <script type="text/javascript" src="js/engine/game.js"></script>
-  <script type="text/javascript" src="js/engine/profile.js"></script>
-  <script type="text/javascript" src="js/engine/matchmaking.js"></script>
-  <script type="text/javascript" src="js/engine/rankings.js"></script>
-  <script type="text/javascript" src="js/engine/settings.js"></script>
-  <script type="text/javascript" src="js/socket.js"></script>
-  <script type="text/javascript" src="js/index.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/engine/game.js"></script>
+  <script src="js/engine/profile.js"></script>
+  <script src="js/engine/matchmaking.js"></script>
+  <script src="js/engine/rankings.js"></script>
+  <script src="js/engine/settings.js"></script>
+  <script src="js/socket.js"></script>
+  <script src="js/index.js"></script>
 </body>
 </html>

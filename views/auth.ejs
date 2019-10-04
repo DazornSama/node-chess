@@ -6,7 +6,7 @@
 </head>
 <body onload="onLoad()">
   <div class="container">
-    <img id="logo" src="images/full_logo.png">
+    <img alt="<%= trans.images.crown_logo_alt %>" id="logo" src="images/full_logo.png">
     <div class="box">
       <div class="box-head">
         <h2><%= trans.auth.welcome_text %></h2>
@@ -36,6 +36,6 @@
     </div>
   </div>
   <%- include('./shared/footer.ejs') %>
-  <script type="text/javascript" src="js/auth.js"></script>
+  <script src="js/auth.js"></script>
 </body>
 </html>
