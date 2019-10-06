@@ -22,7 +22,7 @@ const Profile = {
   },
 
   /**
-   * Adapt rankings list on orientation change
+   * Adapt profile list on orientation change
    */
   setupList: function() {
     setTimeout(() => {

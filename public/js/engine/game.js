@@ -701,7 +701,10 @@ var Game = (function() {
     tile.innerHTML = sprite;
 
     container.classList.remove('visible');
-    socket.emit('end turn', self.data.roomName, self.boardHtmlToArray(), self.data.round.count);
+
+    if(self.isMyTurn) {
+      socket.emit('end turn', self.data.roomName, self.boardHtmlToArray(), self.data.round.count);
+    }
   },
 
   /**
@@ -710,6 +713,7 @@ var Game = (function() {
   self.onDenyPawnPromote = function() {
     let container = document.getElementById('pawn-promote');
     container.classList.remove('visible');
+    
     if(self.isMyTurn)
     {
       socket.emit('end turn', self.data.roomName, self.boardHtmlToArray(), self.data.round.count);
