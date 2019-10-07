@@ -358,6 +358,7 @@
 #rankings .box-body .row {
   display: flex;
   padding: 12px;
+  width: calc(100% - 17px);
   background-color: #ebebeb;
   color: #292929;
   border-radius: 3px;

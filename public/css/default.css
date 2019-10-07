@@ -13,7 +13,7 @@ body {
   background: -webkit-linear-gradient(120deg, rgba(108,228,245,1) 0%, rgba(179,175,252,1) 100%);
   background: linear-gradient(120deg, rgba(108,228,245,1) 0%, rgba(179,175,252,1) 100%);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#6ce4f5",endColorstr="#b3affc",GradientType=1);*/
-  background-image: url(https://cdn.shopify.com/s/files/1/1970/9573/products/1593-2x2-tile_1024x1024.jpg?v=1495157192);
+  background-image: url(../images/background.jpg);
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
