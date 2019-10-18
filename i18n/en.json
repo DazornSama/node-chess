@@ -21,7 +21,11 @@
       "help_title": "Users online"
     },
     "profile": {
-      "head_title_text": "Profile"
+      "head_title_text": "Profile",
+      "games_total_text": "games",
+      "games_won_text": "wins",
+      "games_lost_text": "lost",
+      "points_record_text": "Last record"
     },
     "matchmaking": {
       "head_title_text": "New game",
@@ -43,7 +47,10 @@
       "deny_movement_text": "Invalid move",
       "turn_out_of_time_text": "KO",
       "moves_from_text": "From",
-      "moves_to_text": "to"
+      "moves_to_text": "to",
+      "end_win_text": "You win",
+      "end_lose_text": "You lose",
+      "end_draw_text": "Draw"
     },
     "rankings": {
       "head_title_text": "Ranking"
