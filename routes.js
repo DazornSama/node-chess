@@ -7,8 +7,7 @@ const controllers = require('./controllers');
  * Defines website routing
  * @param {Express.Application} app Express application object
  */
-function routing(app)
-{
+function routing(app) {
   // GET requests
   app.route('/')
     .get(controllers.views.index);
@@ -34,6 +33,9 @@ function routing(app)
 
   app.route('/auth/validate')
     .post(controllers.auth.validate);
+
+  app.route('/auth/google/:idToken')
+    .post(controllers.auth.googleSignIn);
 };
 
 // Exposes module as a method
