@@ -1,6 +1,7 @@
 'use strict';
 
 // Models objects import
+const MobileDetect = require('mobile-detect');
 const User = require('./models/user');
 const Matchmaking = require('./models/matchmaking');
 const Game = require('./models/game');
@@ -11,74 +12,81 @@ const History = require('./models/history');
  * @param {SocketIO.Server} io SocketIO server object
  * @param {*} session Express session handler
  */
-function configureSocket(io, session)
-{
+function configureSocket(io, session) {
   // Express session SocketIO adapter
-  io.use((socket, next) =>
-  {
+  io.use((socket, next) => {
     session(socket.request, socket.request.res, next);
   });
 
   // Defines socketIO event handlers after client connection
-  io.on('connection', async (socket) => 
-  {
+  io.on('connection', async (socket) => {
     // Express session stored user object
     let userId = socket.request.session.user;
 
     // SocketIO client disconnection handler
     onDisconnect(io, socket, userId);
-    
+
+    let md = new MobileDetect(socket.request.headers['user-agent']);
+    if (md.os() === 'AndroidOS') {
+      socket.on('android connection', (userId) => {
+        setupSocketClient(io, socket, userId);
+      });
+      return;
+    }
+
     // Condition to verify the user object exists
-    if(!userId)
-    {
+    if (!userId) {
       // Forces the socketIO client to disconnect and reload the page
       io.to(socket.id).emit('force reload');
       socket.disconnect();
       return;
     }
 
-    // Links user to active socket connection id (on database)
-    await User.linkToSocket(userId, socket.id);
-    // Notify to all socketIO clients connected that a client has connected
-    io.emit('user connected', Object.keys(io.sockets.sockets).length);
-
-    // Condition to check if user is already in an active game
-    let game = await User.isInGame(userId);
-    if(game)
-    {
-      // Gets current user object
-      let user = await User.getById(userId);
-      // Gets current user's player object
-      let player = game.players.find(x => x.userTag === user.tag);
-      // Updates player's socketID value
-      player.socketId = socket.id;
-
-      // Updates current game status (on database)
-      await Game.update(game);
-      
-      // Gets current round's player
-      let nextPlayer = game.players.find(x => x.userTag === game.round.by);
-      let canMove = nextPlayer === player;
-
-      // Notify current socketIO client reconnection to game
-      io.to(socket.id).emit('game resumed', canMove, game);
-    }
-
-    // SocketIO chat events handlers
-    onGeneralChatMessage(socket);
-    onIngameChatMessage(socket);
-    onJoinRoom(socket);
-    
-    // SocketIO game events handlers
-    onSearchGame(io, socket);
-    onAbortSearchGame(socket);
-    onAskForGame(io, socket);
-    onAskForGameResult(io, socket);
-    onGameReady(io, socket);
-    onRequestAuthorizeMovement(io, socket);
-    onRequestPawnPromote(io, socket);
-    onEndTurn(io, socket);
+    setupSocketClient(io, socket, userId);
   });
+}
+
+async function setupSocketClient(io, socket, userId) {
+  // Links user to active socket connection id (on database)
+  await User.linkToSocket(userId, socket.id);
+  // Notify to all socketIO clients connected that a client has connected
+  io.emit('user connected', Object.keys(io.sockets.sockets).length);
+
+  // Condition to check if user is already in an active game
+  let game = await User.isInGame(userId);
+  if (game) {
+    // Gets current user object
+    let user = await User.getById(userId);
+    // Gets current user's player object
+    let player = game.players.find(x => x.userTag === user.tag);
+    // Updates player's socketID value
+    player.socketId = socket.id;
+
+    // Updates current game status (on database)
+    await Game.update(game);
+
+    // Gets current round's player
+    let nextPlayer = game.players.find(x => x.userTag === game.round.by);
+    let canMove = nextPlayer === player;
+
+    // Notify current socketIO client reconnection to game
+    io.to(socket.id).emit('game resumed', canMove, game);
+  }
+
+  // SocketIO chat events handlers
+  onGeneralChatMessage(socket);
+  onIngameChatMessage(socket);
+  onJoinRoom(socket);
+
+  // SocketIO game events handlers
+  onSearchGame(io, socket);
+  onAbortSearchGame(socket);
+  onAskForGame(io, socket);
+  onAskForGameResult(io, socket);
+  onGameReady(io, socket);
+  onRequestAuthorizeMovement(io, socket);
+  onRequestPawnPromote(io, socket);
+  onEndTurn(io, socket);
 }
 
 /**
@@ -87,10 +95,8 @@ function configureSocket(io, session)
  * @param {SocketIO.Socket} socket SocketIO socket object
  * @param {String} userId Current user id
  */
-function onDisconnect(io, socket, userId)
-{
-  socket.on('disconnect', async () => 
-  {
+function onDisconnect(io, socket, userId) {
+  socket.on('disconnect', async () => {
     // Removes user from matchmaking queue
     await Matchmaking.remove(socket.id);
     // Unlinks user from active socket connection id (on database)
@@ -105,10 +111,8 @@ function onDisconnect(io, socket, userId)
  * Handler for "general chat message" socketIO event
  * @param {SocketIO.Socket} socket SocketIO socket object
  */
-function onGeneralChatMessage(socket)
-{
-  socket.on('general chat message', (username, userTag, message) => 
-  {
+function onGeneralChatMessage(socket) {
+  socket.on('general chat message', (username, userTag, message) => {
     // Notify to all socketIO clients connected a new general chat message
     socket.broadcast.emit('general chat message', username, userTag, message);
   });
@@ -118,10 +122,8 @@ function onGeneralChatMessage(socket)
  * Handler for "ingame chat message" socketIO event
  * @param {SocketIO.Socket} socket SocketIO socket object
  */
-function onIngameChatMessage(socket)
-{
-  socket.on('ingame chat message', (gameRoom, username, userTag, message) => 
-  {
+function onIngameChatMessage(socket) {
+  socket.on('ingame chat message', (gameRoom, username, userTag, message) => {
     // Notify to same-room socketIO client a new game message
     socket.to(gameRoom).emit('ingame chat message', username, userTag, message);
   });
@@ -131,10 +133,8 @@ function onIngameChatMessage(socket)
  * Handler for "join room" socketIO event
  * @param {SocketIO.Socket} socket SocketIO socket object
  */
-function onJoinRoom(socket)
-{
-  socket.on('join room', (roomName) => 
-  {
+function onJoinRoom(socket) {
+  socket.on('join room', (roomName) => {
     // Joins current socket connection in the specified room's namespace
     socket.join(roomName);
   });
@@ -145,27 +145,21 @@ function onJoinRoom(socket)
  * @param {SocketIO.Server} io SocketIO server object
  * @param {SocketIO.Socket} socket SocketIO socket object
  */
-function onSearchGame(io, socket)
-{
-  socket.on('search game', async (userTag) => 
-  {
+function onSearchGame(io, socket) {
+  socket.on('search game', async (userTag) => {
     // Saerches a game to match with
     let game = await Matchmaking.match(userTag, socket.id);
 
     // Condition to check if a game was founded
-    if(game)
-    {
+    if (game) {
       // Exectues for each player in input array
-      await doForEachPlayer(game.players, async (player) => 
-      {
+      await doForEachPlayer(game.players, async (player) => {
         // Links user to game
         await User.linkToGame(player.userTag, game.roomName);
         // Notify to player socketIO client the founded game
         io.to(player.socketId).emit('game found', game);
       });
-    }
-    else
-    {
+    } else {
       // Inserts the match request in the matches' queue
       await Matchmaking.insert(userTag, socket.id);
     }
@@ -176,10 +170,8 @@ function onSearchGame(io, socket)
  * Handler for "join room" socketIO event
  * @param {SocketIO.Socket} socket SocketIO socket object
  */
-function onAbortSearchGame(socket)
-{
-  socket.on('abort search game', async() => 
-  {
+function onAbortSearchGame(socket) {
+  socket.on('abort search game', async () => {
     // Removes current match request from the matches' queue
     await Matchmaking.remove(socket.id);
   });
@@ -190,31 +182,22 @@ function onAbortSearchGame(socket)
  * @param {SocketIO.Server} io SocketIO server object
  * @param {SocketIO.Socket} socket SocketIO socket object
  */
-function onAskForGame(io, socket)
-{
-  socket.on('ask for game', async(userTag, foeTag) =>
-  {
+function onAskForGame(io, socket) {
+  socket.on('ask for game', async (userTag, foeTag) => {
     // Gets the invited user object
     let foe = await User.getByTag(foeTag);
 
     // Condition to check if foe exists and is online and not already in a game
-    if(!foe)
-    {
+    if (!foe) {
       // Notify to current socketIO client foe does not exists
       socket.emit('ask for game error', 'index.matchmaking.ask_for_game_no_user_text');
-    }
-    else if(!foe.socketId)
-    {
+    } else if (!foe.socketId) {
       // Notify to current socketIO client foe is offline
       socket.emit('ask for game error', 'index.matchmaking.ask_for_game_user_off_text');
-    }
-    else if(foe.in_game)
-    {
+    } else if (foe.in_game) {
       // Notify to current socketIO client foe is already in a game
       socket.emit('ask for game error', 'index.matchmaking.ask_for_game_user_ingame_text');
-    }
-    else
-    {
+    } else {
       // Gets master user object
       let challenger = await User.getByTag(userTag);
       // Notify to foe socketIO client the game invite
@@ -228,29 +211,23 @@ function onAskForGame(io, socket)
  * @param {SocketIO.Server} io SocketIO server object
  * @param {SocketIO.Socket} socket SocketIO socket object
  */
-function onAskForGameResult(io, socket)
-{
-  socket.on('ask for game result', async (result, foeTag, challengerTag) => 
-  {
+function onAskForGameResult(io, socket) {
+  socket.on('ask for game result', async (result, foeTag, challengerTag) => {
     // Gets the master user object
     let challenger = await User.getByTag(challengerTag);
-    
+
     // Condition to check the status of the sent invite
-    if(!result)
-    {
+    if (!result) {
       // Notify to master user socketIO client foe did not accepted the invite
       io.to(challenger.socketId).emit('ask for game error', 'index.matchmaking.ask_for_game_aborted_text');
-    }
-    else
-    {
+    } else {
       // Gets foe user object
       let foe = await User.getByTag(foeTag);
       // Creates a game instance for master user and foe
       let game = await Game.create(challenger, foe);
 
       // Executes for each player in input array
-      await doForEachPlayer(game.players, async (player) => 
-      {
+      await doForEachPlayer(game.players, async (player) => {
         // Notify to player socketIO client the founded game
         io.to(player.socketId).emit('game found', game);
       });
@@ -263,14 +240,12 @@ function onAskForGameResult(io, socket)
  * @param {SocketIO.Server} io SocketIO server object
  * @param {SocketIO.Socket} socket SocketIO socket object
  */
-function onGameReady(io, socket)
-{
-  socket.on('game ready', async (roomName, board) => 
-  {
+function onGameReady(io, socket) {
+  socket.on('game ready', async (roomName, board) => {
     // Gets current game object
     let game = await Game.getByRoomName(roomName);
     // Condition to check if game exists
-    if(!game) {
+    if (!game) {
       return;
     }
 
@@ -279,14 +254,11 @@ function onGameReady(io, socket)
     let moves;
 
     // Exceptions handler to catch a "cheating" error
-    try
-    {
+    try {
       // Calculates all possible moves for the current board and units
       moves = Game.calcAllPossibleMoves(board, game, firstPlayer);
       //Game.onKingUnderChess(moves, board, game, firstPlayer);
-    }
-    catch(err)
-    {
+    } catch (err) {
       // Declares the winner
       let status = await onCheating(game);
       // Notify players of game end
@@ -295,8 +267,7 @@ function onGameReady(io, socket)
     }
 
     // Executes for each player in input array
-    await doForEachPlayer(game.players, async (player) => 
-    {
+    await doForEachPlayer(game.players, async (player) => {
       let canMove = player === firstPlayer;
       player.authorizedMoves = canMove ? moves : [];
 
@@ -315,28 +286,22 @@ function onGameReady(io, socket)
  * @param {SocketIO.Server} io SocketIO server object
  * @param {SocketIO.Socket} socket SocketIO socket object
  */
-function onRequestAuthorizeMovement(io, socket)
-{
-  socket.on('request authorize movement', async (roomName, userTag, board, startX, startY, endX, endY) => 
-  {
+function onRequestAuthorizeMovement(io, socket) {
+  socket.on('request authorize movement', async (roomName, userTag, board, startX, startY, endX, endY) => {
     // Gets current game object
     let game = await Game.getByRoomName(roomName);
     // Condition to check if game exists
-    if(!game) 
-    {
+    if (!game) {
       return;
     }
 
     let move;
 
     // Exceptions handler to catch a "cheating" error
-    try
-    {
+    try {
       // Checks if the request movement is possible
       move = Game.checkDoneMovement(board, game, userTag, startX, startY, endX, endY);
-    }
-    catch(err)
-    {
+    } catch (err) {
       // Declares the winner
       let status = await onCheating(game);
       // Notify players of game end
@@ -345,15 +310,12 @@ function onRequestAuthorizeMovement(io, socket)
     }
 
     // Condition to check if the move object is filled
-    if(move)
-    {
+    if (move) {
       // Updates current game status (on database)
       await Game.update(game);
       // Notify to current socketIO room's clients to execute the move
       io.to(roomName).emit('do movement', move);
-    }
-    else
-    {
+    } else {
       let player = game.players.find(x => x.userTag === userTag);
       // Notify to player socketIO client he can not execute that move
       io.to(player.socketId).emit('deny movement');
@@ -361,26 +323,20 @@ function onRequestAuthorizeMovement(io, socket)
   });
 }
 
-function onRequestPawnPromote(io, socket)
-{
-  socket.on('request pawn promote', async (roomName, userTag, tileX, tileY, unit) =>
-  {
+function onRequestPawnPromote(io, socket) {
+  socket.on('request pawn promote', async (roomName, userTag, tileX, tileY, unit) => {
     // Gets current game object
     let game = await Game.getByRoomName(roomName);
     // Condition to check if game exists
-    if(!game) 
-    {
+    if (!game) {
       return;
     }
 
     let pawn = Game.canPawnBePromoted(game, userTag, tileX, tileY);
-    if(pawn)
-    {
+    if (pawn) {
       await Game.promotePawn(game, pawn, unit);
       io.to(roomName).emit('do pawn promote', pawn);
-    }
-    else
-    {
+    } else {
       let player = game.players.find(x => x.userTag === userTag);
       // Notify to player socketIO client he can not execute that move
       io.to(player.socketId).emit('deny pawn promote');
@@ -393,15 +349,12 @@ function onRequestPawnPromote(io, socket)
  * @param {SocketIO.Server} io SocketIO server object
  * @param {SocketIO.Socket} socket SocketIO socket object
  */
-function onEndTurn(io, socket)
-{
-  socket.on('end turn', async (roomName, board, number) => 
-  {
+function onEndTurn(io, socket) {
+  socket.on('end turn', async (roomName, board, number) => {
     // Gets current game object
     let game = await Game.getByRoomName(roomName);
     // Condition to check if game exists and passed round number is the current in game
-    if(!game || game.round.count !== number) 
-    {
+    if (!game || game.round.count !== number) {
       return;
     }
 
@@ -411,15 +364,13 @@ function onEndTurn(io, socket)
     let underChess = false;
 
     // Exceptions handler to catch a "cheating" error
-    try
-    {
+    try {
       // Calculates all possible moves for the current board and units
       moves = Game.calcAllPossibleMoves(board, game, nextPlayer);
       underChess = Game.onKingUnderChess(moves, board, game, nextPlayer);
       Game.hasAlreadyDoneSpecialMovement(moves, nextPlayer);
-      
-      if(Game.isThreeLastMovesIdentically(game, game.players.find(a => a !== nextPlayer)))
-      {
+
+      if (Game.isThreeLastMovesIdentically(game, game.players.find(a => a !== nextPlayer))) {
         // Declares draw
         let status = await onDraw(game);
         // Notify players of game end
@@ -427,8 +378,7 @@ function onEndTurn(io, socket)
         return;
       }
 
-      if(Game.isAliveIllegalCombination(game))
-      {
+      if (Game.isAliveIllegalCombination(game)) {
         // Declares draw
         let status = await onDraw(game);
         // Notify players of game end
@@ -438,33 +388,26 @@ function onEndTurn(io, socket)
 
       // Condition to check if player has zero moves
       let movesCount = 0;
-      for(let i = 0; i < moves.length; i++)
-      {
+      for (let i = 0; i < moves.length; i++) {
         movesCount += moves[i].moves.length;
       }
 
-      if(movesCount === 0)
-      {
+      if (movesCount === 0) {
         let status;
 
-        if(Game.isKingUnderChess(board, game, nextPlayer))
-        {
+        if (Game.isKingUnderChess(board, game, nextPlayer)) {
           // Declares draw
           status = await onZeroMoves(game);
-        }
-        else
-        {
+        } else {
           // Declares the winner
           status = await onDraw(game);
         }
-        
+
         // Notify players of game end
         io.to(roomName).emit('game end', status);
         return;
       }
-    }
-    catch(err)
-    {
+    } catch (err) {
       console.log(err);
       // Declares the winner
       let status = await onCheating(game);
@@ -474,14 +417,12 @@ function onEndTurn(io, socket)
     }
 
     // Executes for each player in input array
-    await doForEachPlayer(game.players, async (player) => 
-    {
+    await doForEachPlayer(game.players, async (player) => {
       let canMove = false;
       player.authorizedMoves = [];
       player.underChess = false;
-      
-      if(player === nextPlayer)
-      {
+
+      if (player === nextPlayer) {
         canMove = true;
         player.authorizedMoves = moves;
         player.underChess = underChess;
@@ -503,20 +444,18 @@ function onEndTurn(io, socket)
  * @param {String} roomName Game room name
  * @param {Number} number Game turn number
  */
-function startRoundCountdown(io, roomName, number)
-{
+function startRoundCountdown(io, roomName, number) {
   // Current round timeout handler 
   setTimeout(async () => {
     // Gets current game object
     let game = await Game.getByRoomName(roomName);
     // Condition to check if game exists
-    if(!game) 
-    {
+    if (!game) {
       return;
     }
 
     // Condition to check if the passed round number is the current in game, gets executed after 63,6 seconds from next turn start
-    if((number + 1) === game.round.count) {
+    if ((number + 1) === game.round.count) {
       // Declares winner
       let status = await onTurnOutOfTime(game);
       // Notify players of game end
@@ -529,8 +468,7 @@ function startRoundCountdown(io, roomName, number)
  * Declares the winner and stores the game object
  * @param {Object} game Game object
  */
-async function onZeroMoves(game)
-{
+async function onZeroMoves(game) {
   let winnerTag = game.players.find(x => x.userTag !== game.round.by).userTag;
   // Declares the winner of the game
   await Game.declareWinner(game, winnerTag, Game.endReasons.CHECK_MATE);
@@ -545,8 +483,7 @@ async function onZeroMoves(game)
  * Declares the winner and stores the game object
  * @param {Object} game Game object
  */
-async function onCheating(game) 
-{
+async function onCheating(game) {
   let winnerTag = game.players.find(x => x.userTag !== game.round.by).userTag;
   // Declares the winner of the game
   await Game.declareWinner(game, winnerTag, Game.endReasons.CHEATING);
@@ -561,8 +498,7 @@ async function onCheating(game)
  * Declares the winner and stores the game object
  * @param {Object} game Game object
  */
-async function onTurnOutOfTime(game)
-{
+async function onTurnOutOfTime(game) {
   // Declares the winner of the game
   let winnerTag = game.players.find(x => x.userTag !== game.round.by).userTag;
   await Game.declareWinner(game, winnerTag, Game.endReasons.OUT_OF_TIME);
@@ -573,8 +509,7 @@ async function onTurnOutOfTime(game)
   return game.end;
 }
 
-async function onDraw(game)
-{
+async function onDraw(game) {
   // Declares a draw game
   await Game.declareDraw(game);
 
@@ -590,11 +525,9 @@ async function onDraw(game)
  * @param {Array} players Array of players objects
  * @param {Function} callback Function to call for each object
  */
-async function doForEachPlayer(players, callback)
-{
+async function doForEachPlayer(players, callback) {
   // Cycle throught all players in input array
-  for(let i = 0; i < players.length; i++)
-  {
+  for (let i = 0; i < players.length; i++) {
     // Await for the exection of the callback function
     await callback(players[i]);
   }
