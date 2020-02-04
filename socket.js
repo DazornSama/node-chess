@@ -242,6 +242,10 @@ function onAskForGameResult(io, socket) {
  */
 function onGameReady(io, socket) {
   socket.on('game ready', async (roomName, board) => {
+    console.log('GAME READY');
+    console.log(roomName);
+    console.log(board);
+
     // Gets current game object
     let game = await Game.getByRoomName(roomName);
     // Condition to check if game exists
