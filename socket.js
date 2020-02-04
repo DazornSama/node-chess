@@ -304,6 +304,8 @@ function onRequestAuthorizeMovement(io, socket) {
       return;
     }
 
+    console.log('GAME EXIST');
+
     let move;
 
     // Exceptions handler to catch a "cheating" error
@@ -367,6 +369,8 @@ function onEndTurn(io, socket) {
       return;
     }
 
+    console.log('GAME', board, number);
+
     // Assigns the next move to the appropriate player
     let nextPlayer = Game.setNextPlayer(game);
     let moves;
@@ -379,11 +383,14 @@ function onEndTurn(io, socket) {
       underChess = Game.onKingUnderChess(moves, board, game, nextPlayer);
       Game.hasAlreadyDoneSpecialMovement(moves, nextPlayer);
 
+      console.log('MOVES', moves, underChess);
+
       if (Game.isThreeLastMovesIdentically(game, game.players.find(a => a !== nextPlayer))) {
         // Declares draw
         let status = await onDraw(game);
         // Notify players of game end
         io.to(roomName).emit('game end', status);
+        console.log('three');
         return;
       }
 
@@ -392,6 +399,7 @@ function onEndTurn(io, socket) {
         let status = await onDraw(game);
         // Notify players of game end
         io.to(roomName).emit('game end', status);
+        console.log('illegal');
         return;
       }
 
@@ -407,9 +415,11 @@ function onEndTurn(io, socket) {
         if (Game.isKingUnderChess(board, game, nextPlayer)) {
           // Declares draw
           status = await onZeroMoves(game);
+          console.log('zero');
         } else {
           // Declares the winner
           status = await onDraw(game);
+          console.log('draw');
         }
 
         // Notify players of game end
@@ -417,7 +427,7 @@ function onEndTurn(io, socket) {
         return;
       }
     } catch (err) {
-      console.log(err);
+      console.log('ERR', err);
       // Declares the winner
       let status = await onCheating(game);
       // Notify players of game end
