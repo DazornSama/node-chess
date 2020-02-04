@@ -248,6 +248,7 @@ function onGameReady(io, socket) {
 
     // Gets current game object
     let game = await Game.getByRoomName(roomName);
+    console.log('GAME', game);
     // Condition to check if game exists
     if (!game) {
       return;
