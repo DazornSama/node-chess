@@ -253,6 +253,8 @@ function onGameReady(io, socket) {
       return;
     }
 
+    console.log('GAME EXIST');
+
     // Assigns the first move to "remote" player
     let firstPlayer = Game.setFirstPlayer(game);
     let moves;
@@ -261,11 +263,13 @@ function onGameReady(io, socket) {
     try {
       // Calculates all possible moves for the current board and units
       moves = Game.calcAllPossibleMoves(board, game, firstPlayer);
+      console.log('MOVES CALCULATED');
       //Game.onKingUnderChess(moves, board, game, firstPlayer);
     } catch (err) {
       // Declares the winner
       let status = await onCheating(game);
       // Notify players of game end
+      console.log('GAME END', err);
       io.to(roomName).emit('game end', status);
       return;
     }
@@ -276,6 +280,7 @@ function onGameReady(io, socket) {
       player.authorizedMoves = canMove ? moves : [];
 
       // Notify to player socketIO client next turn
+      console.log('CALLED', player.username);
       io.to(player.socketId).emit('next turn', canMove, game);
     });
 
