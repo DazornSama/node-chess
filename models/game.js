@@ -21,22 +21,29 @@ const END_REASONS = {
  * Gets a game by id
  * @param {ObjectId} id Game's id
  */
-async function getById(id)
-{
+async function getById(id) {
   // Gets MongoDB instance
   let db = await mongo();
-  return await db.collection(COLLECTION_NAME).findOne({ _id: new ObjectId(id) });
+  return await db.collection(COLLECTION_NAME).findOne({
+    _id: new ObjectId(id)
+  });
 }
 
 /**
  * Gets a game by room name
  * @param {String} roomName Game's room name
  */
-async function getByRoomName(roomName)
-{
+async function getByRoomName(roomName) {
   // Gets MongoDB instance
   let db = await mongo();
-  return await db.collection(COLLECTION_NAME).findOne({ roomName: roomName });
+  return await db.collection(COLLECTION_NAME).findOne({
+    roomName: roomName
+  });
+}
+
+async function getAll() {
+  let db = await mongo();
+  return await db.collection(COLLECTION_NAME).find({});
 }
 
 /**
@@ -44,16 +51,14 @@ async function getByRoomName(roomName)
  * @param {Object} challenger
  * @param {Object} foe 
  */
-async function create(challenger, foe)
-{
+async function create(challenger, foe) {
   // Gets MongoDB instance
   let db = await mongo();
 
   let roomName = new Date().getTime();
 
   let game = {
-    players: [
-      {
+    players: [{
         userTag: challenger.tag,
         socketId: challenger.socketId,
         username: challenger.username,
@@ -85,22 +90,26 @@ async function create(challenger, foe)
  * Updates a game document
  * @param {Object} document Game's document
  */
-async function update(document)
-{
+async function update(document) {
   // Gets MongoDB instance
   let db = await mongo();
-  await db.collection(COLLECTION_NAME).updateOne({ roomName: document.roomName }, { $set: document });
+  await db.collection(COLLECTION_NAME).updateOne({
+    roomName: document.roomName
+  }, {
+    $set: document
+  });
 }
 
 /**
  * Removes a document from games collection
  * @param {Object} game Game's object
  */
-async function remove(game)
-{
+async function remove(game) {
   // Gets MongoDB instance
   let db = await mongo();
-  await db.collection(COLLECTION_NAME).deleteOne({ roomName: game.roomName });  
+  await db.collection(COLLECTION_NAME).deleteOne({
+    roomName: game.roomName
+  });
 }
 
 /**
@@ -109,17 +118,15 @@ async function remove(game)
  * @param {Object} game Game's object
  * @param {Object} player Player object
  */
-function calcAllPossibleMoves(board, game, player)
-{
+function calcAllPossibleMoves(board, game, player) {
   // Gets all moves
   let moves = chess.calcAllPossibleMoves(board, game, player);
 
   // Condition to check if player has cheated
-  if(player.cheated)
-  {
+  if (player.cheated) {
     throw 'Hai usato trucchi';
   }
-  
+
   return moves;
 }
 
@@ -138,8 +145,7 @@ function onKingUnderChess(moves, board, game, player) {
  * Sets the first player of a game
  * @param {Object} game Game's object
  */
-function setFirstPlayer(game)
-{
+function setFirstPlayer(game) {
   // Gets first player
   let player = game.players.find(x => x.class === 'remote');
 
@@ -159,8 +165,7 @@ function setFirstPlayer(game)
  * @param {Object} game Game's object
  * @param {Object} player Player object
  */
-function isKingUnderChess(board, game, player)
-{
+function isKingUnderChess(board, game, player) {
   // Gets the player's foe
   let foe = game.players.find(x => x !== player);
   // Gets all board units
@@ -181,35 +186,28 @@ function isKingUnderChess(board, game, player)
  * @param {Number} endX Movement horizontal axis final value
  * @param {Number} endY Movement vertical axis final value
  */
-function checkDoneMovement(board, game, userTag, startX, startY, endX, endY)
-{
+function checkDoneMovement(board, game, userTag, startX, startY, endX, endY) {
   // Gets current player
   let player = game.players.find(x => x.userTag === userTag);
   let moves;
 
-  try
-  {
+  try {
     // Calculates all moves in current turn
     moves = calcAllPossibleMoves(board, game, player);
-  }
-  catch(err)
-  {
+  } catch (err) {
     throw err;
   }
 
-  try
-  {
+  try {
     // Gets current movement's unit
     let unit = moves.find(a => a.x === startX && a.y === startY);
     // Gets current movement's unit move
     let move = unit.moves.find(a => a.x === endX && a.y === endY);
 
     // Condition to check if move has side effects
-    if(move.side)
-    {
+    if (move.side) {
       // Condition to check if player can do a special movement
-      if(!hasAlreadyDoneSpecialMovement(player, move.side.type))
-      {
+      if (!hasAlreadyDoneSpecialMovement(player, move.side.type)) {
         // Updates side unit position
         let newunit = player.units.find(a => a.x === move.side.originX && a.y === move.side.originY);
         newunit.x = move.side.x;
@@ -217,53 +215,45 @@ function checkDoneMovement(board, game, userTag, startX, startY, endX, endY)
 
         // Adds current special movement to done array
         player.specialMoves.push(move.side.type);
-      }
-      else
-      {
+      } else {
         return false;
       }
     }
 
     // Condition to check if movement's unit is turret or king
-    if(unit.u === chess.UNITS.TURRET || unit.u === chess.UNITS.KING)
-    {
+    if (unit.u === chess.UNITS.TURRET || unit.u === chess.UNITS.KING) {
       unit.f = false;
 
       let canCastling = false;
       // Cycle throught all player's units
-      for(let i = 0; i < player.units.length; i++)
-      {
+      for (let i = 0; i < player.units.length; i++) {
         // Gets current unit
         let u = player.units[i];
         // Condition to check if current unit is turret or king
-        if(u.u === chess.UNITS.TURRET || u.u === chess.UNITS.KING)
-        {
+        if (u.u === chess.UNITS.TURRET || u.u === chess.UNITS.KING) {
           // Condition to check if current unit has done zero movements
-          if(u.f)
-          {
+          if (u.f) {
             canCastling = true;
           }
         }
       }
 
       // Condition to check if player can do "castling" movement
-      if(!canCastling)
-      {
+      if (!canCastling) {
         // Adds "castling" movement to done array
         let specialMoves = player.specialMoves ? player.specialMoves : [];
         specialMoves.push('castling');
         player.specialMoves = specialMoves;
       }
     }
-    
+
     // Gets player's foe
     let foe = game.players.find(x => x !== player);
     // Gets a possible dead unit after the move
-    let deadUnit = foe.units.find(a =>  a.x === move.x && a.y === move.y);
+    let deadUnit = foe.units.find(a => a.x === move.x && a.y === move.y);
 
     // Condition to check if dead unit exists
-    if(deadUnit)
-    {
+    if (deadUnit) {
       // Adds dead unit to the graveyard
       foe.graveyard.push(deadUnit);
       move.d = deadUnit.u;
@@ -272,19 +262,18 @@ function checkDoneMovement(board, game, userTag, startX, startY, endX, endY)
       let start = foe.units.indexOf(deadUnit);
       foe.units.splice(start, 1);
     }
-    
+
     move.originX = unit.x;
     move.originY = unit.y;
     move.u = unit.u;
-    
+
     // Updates movement's unit position
     let newunit = player.units.find(a => a.x === unit.x && a.y === unit.y);
     newunit.x = move.x;
     newunit.y = move.y;
 
     // Condition to check if is first move for movement's unit move
-    if(move.first)
-    {
+    if (move.first) {
       newunit.f = true;
     }
 
@@ -296,9 +285,7 @@ function checkDoneMovement(board, game, userTag, startX, startY, endX, endY)
     });
 
     return move;
-  }
-  catch(err)
-  {
+  } catch (err) {
     return false;
   }
 }
@@ -310,14 +297,12 @@ function checkDoneMovement(board, game, userTag, startX, startY, endX, endY)
  * @param {Number} x Unit's horizontal axis value
  * @param {Number} y Unit's vertical axis value
  */
-function canPawnBePromoted(game, userTag, x, y)
-{
+function canPawnBePromoted(game, userTag, x, y) {
   y = parseInt(y);
   x = parseInt(x);
 
   // Condition to check if unit is on vertical limit of the board
-  if(y !== 1 && y !== 8)
-  {
+  if (y !== 1 && y !== 8) {
     return;
   }
 
@@ -327,8 +312,7 @@ function canPawnBePromoted(game, userTag, x, y)
   let unit = player.units.find(a => a.x === x && a.y === y);
 
   // Condition to check if unit exists and is pawn
-  if(!unit || unit.u !== chess.UNITS.PAWN)
-  {
+  if (!unit || unit.u !== chess.UNITS.PAWN) {
     return;
   }
 
@@ -341,19 +325,16 @@ function canPawnBePromoted(game, userTag, x, y)
  * @param {Object} pawn Unit to promote object
  * @param {chess.UNITS} unit Unit type
  */
-async function promotePawn(game, pawn, unit)
-{
+async function promotePawn(game, pawn, unit) {
   unit = parseInt(unit);
-  
+
   // Cycle throught all players
-  for(let i = 0; i < game.players.length; i++)
-  {
+  for (let i = 0; i < game.players.length; i++) {
     // Gets current player's pawn to promote
     let p = game.players[i].units.find(x => x === pawn);
 
     // Condition to check if pawn exists
-    if(p)
-    {
+    if (p) {
       p.u = unit;
     }
   }
@@ -366,38 +347,32 @@ async function promotePawn(game, pawn, unit)
  * @param {Array} moves Moves array
  * @param {Object} player Player object
  */
-function hasAlreadyDoneSpecialMovement(moves, player)
-{
+function hasAlreadyDoneSpecialMovement(moves, player) {
   let illegalMoves = [];
 
   // Cycle throught all moves
-  for(let i = 0; i < moves.length; i++)
-  {
+  for (let i = 0; i < moves.length; i++) {
     // Gets current movement
     let move = moves[i];
 
     // Cycle throught all moves of current movement
     // From end to zero
-    for(let j = (move.moves.length - 1); j >= 0; j--)
-    {
+    for (let j = (move.moves.length - 1); j >= 0; j--) {
       // Gets current movement's move
       let m = move.moves[j];
 
       // Condition to check if movement's move exists
-      if(!m)
-      {
+      if (!m) {
         continue;
       }
 
       // Condition to check if movement's move has a side effect
-      if(m.side !== undefined)
-      {
+      if (m.side !== undefined) {
         let specialMoves = player.specialMoves ? player.specialMoves : [];
         let done = specialMoves.includes(m.side.type);
 
         // Condition to check if player's special moves array contains current special movement
-        if(done)
-        {
+        if (done) {
           // Adds movement's move to illegal moves array 
           illegalMoves.push([i, j]);
         }
@@ -408,8 +383,7 @@ function hasAlreadyDoneSpecialMovement(moves, player)
   }
 
   // Cycle throughe all illegal moves
-  for(let i = 0; i < illegalMoves.length; i++)
-  {
+  for (let i = 0; i < illegalMoves.length; i++) {
     // Removes current illegal move from moves array
     moves[illegalMoves[i][0]].moves.splice(illegalMoves[i][1], 1);
   }
@@ -422,14 +396,13 @@ function hasAlreadyDoneSpecialMovement(moves, player)
  * @param {Object} game Game's object 
  * @param {Object} player Player object
  */
-function isThreeLastMovesIdentically(game, player)
-{
+function isThreeLastMovesIdentically(game, player) {
   let count = 0;
   let lastMove;
 
   // Sets start as the last round
   let start = game.rounds.length - 1;
-  
+
   // Sets the end as 12 rounds before last
   // Same move can be done each 2 turn
   // A player move each 2 turn
@@ -437,28 +410,23 @@ function isThreeLastMovesIdentically(game, player)
   let end = start - 12;
 
   // Condition to check if exists rounds to control
-  if(end < 0)
-  {
+  if (end < 0) {
     end = 0;
   }
 
   // Cycle from start to end
-  for(let i = start; i >= end; i--)
-  {
+  for (let i = start; i >= end; i--) {
     // Gets current round
     let round = game.rounds[i];
 
     // Condition to check if round was done by current player
-    if(round.by === player.userTag)
-    {
+    if (round.by === player.userTag) {
       // Condition to check if same move happens more than 3 times
-      if(count >= 3)
-      {
+      if (count >= 3) {
         continue;
       }
       // Condition to check if current move is equal to last move registered
-      else if(!lastMove || (lastMove.x === round.move.x && lastMove.y === round.move.y && lastMove.u === round.move.u))
-      {
+      else if (!lastMove || (lastMove.x === round.move.x && lastMove.y === round.move.y && lastMove.u === round.move.u)) {
         lastMove = round.move;
         count++;
       }
@@ -476,14 +444,12 @@ function isAliveIllegalCombination(game) {
   let units = [];
 
   // Cycle throught all players
-  for(let i = 0; i < game.players.length; i++)
-  {
+  for (let i = 0; i < game.players.length; i++) {
     // Gets current player
     let player = game.players[i];
 
     // Cycle throught all player's units
-    for(let j = 0; j < player.units.length; j++)
-    {
+    for (let j = 0; j < player.units.length; j++) {
       // Adds current unit type
       units.push(player.units[j].u);
     }
@@ -491,18 +457,16 @@ function isAliveIllegalCombination(game) {
 
   let sum = 0;
   // Cycle throught all alive units
-  for(let i = 0; i < units.length; i++)
-  {
+  for (let i = 0; i < units.length; i++) {
     sum += units[i];
   }
 
   // Condition to check if just two kings alive (12)
   // Condition to check if two kings and a bishop alive (15)
   // Conidition to check if two kings and an horse alive (16)
-  if(sum === 12 ||
+  if (sum === 12 ||
     sum === 15 ||
-    sum === 16)
-  {
+    sum === 16) {
     return true;
   }
 
@@ -513,8 +477,7 @@ function isAliveIllegalCombination(game) {
  * Sets the next round player
  * @param {Object} game Game's object
  */
-function setNextPlayer(game)
-{
+function setNextPlayer(game) {
   // Gets current player
   let player = game.players.find(x => x.userTag === game.round.by);
   // Gets next round player
@@ -534,8 +497,7 @@ function setNextPlayer(game)
  * @param {String} userTag Winner's tag 
  * @param {END_REASONS} reason Reason of game end
  */
-async function declareWinner(game, userTag, reason) 
-{
+async function declareWinner(game, userTag, reason) {
   // Gets the winner
   let winner = game.players.find(x => x.userTag === userTag);
   // Gets the loser
@@ -560,8 +522,7 @@ async function declareWinner(game, userTag, reason)
  * Declares a draw game end
  * @param {Object} game Game's object
  */
-async function declareDraw(game)
-{
+async function declareDraw(game) {
   game.round = undefined;
   game.end = {
     at: new Date(),
@@ -578,15 +539,13 @@ async function declareDraw(game)
  * @param {Boolean} winner Is the player the winner?
  * @param {END_REASONS} reason Reason of game end
  */
-async function calcEndGamePoints(userTag, winner, reason)
-{
+async function calcEndGamePoints(userTag, winner, reason) {
   // Gets current player's user object
   let user = await User.getByTag(userTag);
   let points = 0;
 
   // Switches game end reason
-  switch(reason)
-  {
+  switch (reason) {
     case END_REASONS.CHECK_MATE:
       points = winner ? 15 : -15;
       break;
@@ -601,18 +560,15 @@ async function calcEndGamePoints(userTag, winner, reason)
   user.points += points;
 
   // Condition to check if new user points are less than zero
-  if(user.points < 0)
-  {
+  if (user.points < 0) {
     user.points = 0;
   }
   // Condition to check if new user points are greater than 7000
-  else if(user.points > 7000)
-  {
-    user.points  = 7000;
+  else if (user.points > 7000) {
+    user.points = 7000;
   }
 
-  if(user.points > user.record)
-  {
+  if (user.points > user.record) {
     user.record = user.points;
   }
 
@@ -639,3 +595,4 @@ exports.setNextPlayer = setNextPlayer;
 exports.declareWinner = declareWinner;
 exports.declareDraw = declareDraw;
 exports.endReasons = END_REASONS;
+exports.getAll = getAll;
