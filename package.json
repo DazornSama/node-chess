@@ -33,6 +33,6 @@
     "mobile-detect": "^1.4.4",
     "mongodb": "^3.3.2",
     "serve-favicon": "^2.5.0",
-    "socket.io": "^2.2.0"
+    "socket.io": "^2.4.0"
   }
 }
